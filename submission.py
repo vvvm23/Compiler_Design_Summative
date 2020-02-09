@@ -1,7 +1,15 @@
 from collections import defaultdict
 from pprint import pprint
+import matplotlib.pyplot as plt # For visualising graph
+import sys 
 
-// TODO: Allow splitting by other whitespace types. For now space is fine
+'''
+    Inputs:
+        path: Path to file containg sets and the formula
+    Outputs:
+        file_dict: Dictionary containing all input sets and the formula
+'''
+# TODO: Allow splitting by other whitespace types. For now space is fine
 def read_file(path):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
@@ -31,4 +39,15 @@ def read_file(path):
     return file_dict
 
 if __name__ == "__main__":
-    print(read_file("example.txt"))
+    # TODO: Ask more details on this log file.
+    LOG_PATH = "./log.txt"
+
+    if not len(sys.argv) == 2:
+        print("Invalid arguments!")
+        print("python {sys.argv[0]} input_file")
+        exit()
+
+    file_path = sys.argv[1]
+    fo_dict = read_file(file_path)
+
+    pprint(fo_dict)
