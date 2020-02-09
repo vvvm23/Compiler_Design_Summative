@@ -38,6 +38,44 @@ def read_file(path):
         exit()
     return file_dict
 
+# TODO: ASK. Should this print out rules for ALL valid formulae based on the input files variables, constants, etc.?
+# If so, this code remains the same for most input files, but replacing the non-terminals containing only terminals(?)
+def print_grammar(fo_dict):
+    productions = []
+
+    # TODO: Check for empty fo_dict fields
+    # First, generate rules for variables
+    productions.append(
+                f"\\var -> {' | '.join(fo_dict['variables'])}"
+            )
+
+    # Constants
+    productions.append(
+                f"\\const -> {' | '.join(fo_dict['constants'])}"
+            )
+
+    # Predicates
+    productions.append(
+                f"\\pred -> {' | '.join(fo_dict['predicates'])}"
+            )
+
+    # Equality
+    productions.append(
+                f"\\eq -> {' | '.join(fo_dict['equality'])}"
+            )
+
+    # Connectives 
+    productions.append(
+                f"\\conn -> {' | '.join(fo_dict['connectives'])}"
+            )
+
+    # Quantifiers
+    productions.append(
+                f"\\quan -> {' | '.join(fo_dict['quantifiers'])}"
+            )
+
+    pprint(productions)
+
 if __name__ == "__main__":
     # TODO: Ask more details on this log file.
     LOG_PATH = "./log.txt"
@@ -51,3 +89,4 @@ if __name__ == "__main__":
     fo_dict = read_file(file_path)
 
     pprint(fo_dict)
+    print_grammar(fo_dict)
