@@ -11,7 +11,6 @@ import sys
 '''
 # TODO: Allow splitting by other whitespace types. For now space is fine
 # TODO: Allow splitting when no whitespace is present (eg. X\land\neg Y)
-# TODO: Split predicates into symbol and arity tuples
 # TODO: Split connectives into unary and binary
 def read_file(path):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
@@ -31,7 +30,12 @@ def read_file(path):
 
         space_split = colon_split[0].split(' ')
         space_split = [x.replace('\n', '') for x in space_split if not x == '']
-       
+    
+        # If a predicate, split into symbol-arity pair
+        if c_field == 'predicates':
+            file_dict[c_field] = file_dict[c_field] + [(x[:x.find("[")], int(x[x.find("[") + 1:x.find("]")])) for x in space_split]
+            continue
+
         file_dict[c_field] = file_dict[c_field] + space_split
 
     f.close()
@@ -41,7 +45,6 @@ def read_file(path):
         exit()
     return file_dict
 
-# TODO: Predicate rules should be the pred symbol then var_1, ..., var_n for each pred symbol
 # TODO: ASK. Should this print out rules for ALL valid formulae based on the input files variables, constants, etc.?
 # TODO: Convert some symbols to escaped versions
 # If so, this code remains the same for most input files, but replacing the non-terminals containing only terminals(?)
@@ -70,7 +73,7 @@ def print_grammar(fo_dict):
 
     # Predicates
     productions.append(
-                f"pred -> {' | '.join(fo_dict['predicates'])}"
+            "pred -> " + ' | '.join(x[0] + ' \\( ' + ('var , '*int(x[1]))[:-2] + '\\)' for x in fo_dict['predicates'])
             )
     non_terminals.append("pred")
     terminals += fo_dict['predicates']
@@ -109,7 +112,7 @@ def print_grammar(fo_dict):
                     "| quan var form "
                     "| const eq const | const eq var "
                     "| var eq const | var eq var "
-                    "| pred \\( (\\e | arg) \\) "
+                    "| pred "
                     "| \\e"
                 )
             )
