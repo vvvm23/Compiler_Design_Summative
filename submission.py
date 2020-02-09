@@ -10,7 +10,9 @@ import sys
         file_dict: Dictionary containing all input sets and the formula
 '''
 # TODO: Allow splitting by other whitespace types. For now space is fine
+# TODO: Allow splitting when no whitespace is present (eg. X\land\neg Y)
 # TODO: Split predicates into symbol and arity tuples
+# TODO: Split connectives into unary and binary
 def read_file(path):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
@@ -39,58 +41,78 @@ def read_file(path):
         exit()
     return file_dict
 
+# TODO: Predicate rules should be the pred symbol then var_1, ..., var_n for each pred symbol
 # TODO: ASK. Should this print out rules for ALL valid formulae based on the input files variables, constants, etc.?
+# TODO: Convert some symbols to escaped versions
 # If so, this code remains the same for most input files, but replacing the non-terminals containing only terminals(?)
 def print_grammar(fo_dict):
     productions = []
     non_terminals = []
     terminals = []
 
-    non_terminals.append("\\form")
-    terminals += [',', '(', ')']
+    non_terminals.append("form") # Starting symbol
+    terminals += [',', '\\(', '\\)', '\\e'] # Terminals that are always present (Add \\ ?)
 
     # TODO: Check for empty fo_dict fields
     # First, generate rules for variables
     productions.append(
-                f"\\var -> {' | '.join(fo_dict['variables'])}"
+                f"var -> {' | '.join(fo_dict['variables'])}"
             )
-    non_terminals.append("\\var")
+    non_terminals.append("var")
     terminals += fo_dict['variables']
 
     # Constants
     productions.append(
-                f"\\const -> {' | '.join(fo_dict['constants'])}"
+                f"const -> {' | '.join(fo_dict['constants'])}"
             )
-    non_terminals.append("\\const")
+    non_terminals.append("const")
     terminals += fo_dict['constants'] 
 
     # Predicates
     productions.append(
-                f"\\pred -> {' | '.join(fo_dict['predicates'])}"
+                f"pred -> {' | '.join(fo_dict['predicates'])}"
             )
-    non_terminals.append("\\pred")
+    non_terminals.append("pred")
     terminals += fo_dict['predicates']
 
     # Equality
     productions.append(
-                f"\\eq -> {' | '.join(fo_dict['equality'])}"
+                f"eq -> {' | '.join(fo_dict['equality'])}"
             )
-    non_terminals.append("\\eq")
+    non_terminals.append("eq")
     terminals += fo_dict['equality']
 
     # Connectives 
     productions.append(
-                f"\\conn -> {' | '.join(fo_dict['connectives'])}"
+                f"conn -> {' | '.join(fo_dict['connectives'])}"
             )
-    non_terminals.append("\\conn")
+    non_terminals.append("conn")
     terminals += fo_dict['connectives']
 
     # Quantifiers
     productions.append(
-                f"\\quan -> {' | '.join(fo_dict['quantifiers'])}"
+                f"quan -> {' | '.join(fo_dict['quantifiers'])}"
             )
-    non_terminals.append("\\quan")
+    non_terminals.append("quan")
     terminals += fo_dict['quantifiers']
+
+    # Now, add productions for formula (form)
+    productions.append(
+                f"arg -> var , arg | var"
+            )
+    non_terminals.append("arg")
+
+    productions.append(
+                (
+                    "form -> form conn2 form "
+                    "| conn1 form "
+                    "| quan var form "
+                    "| const eq const | const eq var "
+                    "| var eq const | var eq var "
+                    "| pred \\( (\\e | arg) \\) "
+                    "| \\e"
+                )
+            )
 
     pprint(non_terminals)
     pprint(terminals)
