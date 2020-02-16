@@ -105,11 +105,6 @@ def print_grammar(fo_dict):
 
     # Now, add productions for formula (form)
     productions.append(
-                f"arg -> var , arg | var"
-            )
-    non_terminals.append("arg")
-
-    productions.append(
                 (
                     "form -> form conn2 form "
                     "| conn1 form "
