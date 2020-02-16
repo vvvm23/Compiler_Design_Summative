@@ -30,7 +30,7 @@ def read_file(path):
 
         space_split = colon_split[0].split(' ')
         space_split = [x.replace('\n', '') for x in space_split if not x == '']
-    
+   
         # If a predicate, split into symbol-arity pair
         if c_field == 'predicates':
             file_dict[c_field] = file_dict[c_field] + [(x[:x.find("[")], int(x[x.find("[") + 1:x.find("]")])) for x in space_split]
@@ -45,16 +45,14 @@ def read_file(path):
         exit()
     return file_dict
 
-# TODO: ASK. Should this print out rules for ALL valid formulae based on the input files variables, constants, etc.?
 # TODO: Convert some symbols to escaped versions
-# If so, this code remains the same for most input files, but replacing the non-terminals containing only terminals(?)
 def print_grammar(fo_dict):
     productions = []
     non_terminals = []
     terminals = []
 
     non_terminals.append("form") # Starting symbol
-    terminals += [',', '\\(', '\\)', '\\e'] # Terminals that are always present (Add \\ ?)
+    terminals += [',', '(', ')', '\\e'] # Terminals that are always present (Add \\ ?)
 
     # TODO: Check for empty fo_dict fields
     # First, generate rules for variables
@@ -73,10 +71,10 @@ def print_grammar(fo_dict):
 
     # Predicates
     productions.append(
-            "pred -> " + ' | '.join(x[0] + ' \\( ' + ('var , '*int(x[1]))[:-2] + '\\)' for x in fo_dict['predicates'])
+            "pred -> " + ' | '.join(x[0] + ' ( ' + ('var , '*int(x[1]))[:-2] + ')' for x in fo_dict['predicates'])
             )
     non_terminals.append("pred")
-    terminals += fo_dict['predicates']
+    terminals += [x[0] for x in fo_dict['predicates']]
 
     # Equality
     productions.append(
@@ -86,10 +84,16 @@ def print_grammar(fo_dict):
     terminals += fo_dict['equality']
 
     # Connectives 
-    productions.append(
-                f"conn -> {' | '.join(fo_dict['connectives'])}"
+    if '\\neg' in fo_dict['connectives']:
+        productions.append(
+                f"conn1 -> \\neg"    
             )
-    non_terminals.append("conn")
+        non_terminals.append("conn1")
+
+    productions.append(
+                "conn2 -> " + ' | '.join(x for x in fo_dict['connectives'] if not x == '\\neg')
+            )
+    non_terminals.append("conn2")
     terminals += fo_dict['connectives']
 
     # Quantifiers
