@@ -51,44 +51,64 @@ class Node:
         self.name = name
     def add_production(self, production):
         self.productions.append(production)
+    def find_start(self, start, group):
+        output = []
+
+        for prod in self.productions:
+            if prod == []:
+                continue
+            if prod[0] == start or prod[0] == group: # Will this match objects?
+                output.append(prod)
+            
+
+        return output
+
     def __str__(self):
         return self.name
 
 def fo_to_nodes(fo_dict):
     nodes = {}
+    token_to_node = defaultdict(lambda: None) 
     # Connectives
     nodes['conn1'] = Node('conn1')
     nodes['conn2'] = Node('conn2')
     for conn in fo_dict['connectives']:
         if conn == "\\neg":
             nodes['conn1'].add_production(['\\neg'])
+            token_to_node['\\neg'] = nodes['conn1']
             continue
+        token_to_node[conn] = nodes['conn2']
         nodes['conn2'].add_production([conn])
 
     # Constants
     nodes['const'] = Node('const')
     for const in fo_dict['constants']:
         nodes['const'].add_production([const])
+        token_to_node[const] = nodes['const']
     
     # Equality
     nodes['eq'] = Node('eq')
     for eq in fo_dict['equality']:
         nodes['eq'].add_production([eq])
+        token_to_node[eq] = nodes['eq']
 
     # Variables
     nodes['var'] = Node('var')
     for var in fo_dict['variables']:
         nodes['var'].add_production([var])
+        token_to_node[var] = nodes['var']
 
     # Quantifiers
     nodes['quan'] = Node('quan')
     for quan in fo_dict['quantifiers']:
         nodes['quan'].add_production([quan])
+        token_to_node[quan] = nodes['quan']
 
     # Predicates
     nodes['pred'] = Node('pred')
     for pred in fo_dict['predicates']:
         nodes['pred'].add_production([pred[0], '('] + ([nodes['var'], ',']*pred[1])[:-1] + [')'])
+        token_to_node[pred[0]] = nodes['pred']
 
     # Formula
     nodes['form'] = Node('form')
@@ -100,10 +120,16 @@ def fo_to_nodes(fo_dict):
     nodes['form'].add_production([nodes['var'], nodes['eq'], nodes['const']])
     nodes['form'].add_production([nodes['var'], nodes['eq'], nodes['var']])
     nodes['form'].add_production([nodes['pred']])
+    nodes['form'].add_production(['(', nodes['form'], ')'])
     nodes['form'].add_production([])
 
-    for prod in nodes['form'].productions:
-        print(' '.join(str(x) for x in prod))
+    # for node in nodes:
+        # print(node)
+        # for prod in nodes[node].productions:
+            # print(' '.join(str((str(x), type(x))) for x in prod))
+        # print()
+
+    return nodes, token_to_node
 
 # TODO: Convert some symbols to escaped versions
 def print_grammar(fo_dict):
@@ -176,12 +202,40 @@ def print_grammar(fo_dict):
                 )
             )
 
-    pprint(non_terminals)
-    pprint(terminals)
-    pprint(productions)
+    # pprint(non_terminals)
+    # pprint(terminals)
+    # pprint(productions)
 
-def parse():
-    pass
+def parse(input_tokens, nodes, token_dict):
+    START_SYMBOL = nodes['form']
+    lookahead = input_tokens[0]
+    print(lookahead)
+
+    candidates = START_SYMBOL.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+    lookahead = input_tokens[1]
+    symbol = candidates[0][1]
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+
+    lookahead = input_tokens[2]
+    symbol = nodes['form']
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+
+    lookahead = input_tokens[3]
+    symbol=candidates[0][1]
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+
 
 if __name__ == "__main__":
     # TODO: Ask more details on this log file.
@@ -194,4 +248,5 @@ if __name__ == "__main__":
 
     file_path = sys.argv[1]
     fo_dict = read_file(file_path)
-    fo_to_nodes(fo_dict)
+    nodes, token_dict = fo_to_nodes(fo_dict)
+    parse(fo_dict['formula'], nodes, token_dict)
