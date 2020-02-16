@@ -1,7 +1,9 @@
 from collections import defaultdict
+from collections import deque
 from pprint import pprint
 import matplotlib.pyplot as plt # For visualising graph
 import sys 
+import re
 
 '''
     Inputs:
@@ -30,7 +32,14 @@ def read_file(path):
 
         space_split = colon_split[0].split(' ')
         space_split = [x.replace('\n', '') for x in space_split if not x == '']
-   
+        space_split = [x for x in space_split if not x == '']
+        if c_field == 'formula':
+            print(space_split)
+            for s in space_split:
+                if bool(re.match(r"^[A-Za-z][ ]*\(([ ]*[A-Za-z][ ]*,[ ]*)*[ ]*[A-Za-z][ ]*\)$", s)):
+                    space_split = [list(x) if x == s else [x] for x in space_split]
+                    space_split = [x for y in space_split for x in y]
+            print(space_split)
         # If a predicate, split into symbol-arity pair
         if c_field == 'predicates':
             file_dict[c_field] = file_dict[c_field] + [(x[:x.find("[")], int(x[x.find("[") + 1:x.find("]")])) for x in space_split]
@@ -123,15 +132,18 @@ def fo_to_nodes(fo_dict):
     nodes['form'].add_production(['(', nodes['form'], ')'])
     nodes['form'].add_production([])
 
-    # for node in nodes:
-        # print(node)
-        # for prod in nodes[node].productions:
-            # print(' '.join(str((str(x), type(x))) for x in prod))
-        # print()
+    for node in nodes:
+        print(node)
+        for prod in nodes[node].productions:
+            print(' '.join(str((str(x), type(x))) for x in prod))
+        print()
+
+    pprint(token_to_node)
 
     return nodes, token_to_node
 
 # TODO: Convert some symbols to escaped versions
+# May just be easier to cast all strings to list if they dont start in \\
 def print_grammar(fo_dict):
     productions = []
     non_terminals = []
@@ -207,6 +219,7 @@ def print_grammar(fo_dict):
     # pprint(productions)
 
 def parse(input_tokens, nodes, token_dict):
+    print(input_tokens)
     START_SYMBOL = nodes['form']
     lookahead = input_tokens[0]
     print(lookahead)
@@ -236,6 +249,33 @@ def parse(input_tokens, nodes, token_dict):
         print(' '.join(str(x) for x in c))
     print()
 
+    lookahead = input_tokens[4]
+    symbol = candidates[0][1]
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+    
+    lookahead = input_tokens[5]
+    symbol = nodes['form']
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+
+    lookahead = input_tokens[6]
+    symbol = candidates[0][1]
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
+
+    lookahead = input_tokens[6]
+    symbol = nodes['pred']
+    candidates = symbol.find_start(lookahead, token_dict[lookahead])
+    for c in candidates:
+        print(' '.join(str(x) for x in c))
+    print()
 
 if __name__ == "__main__":
     # TODO: Ask more details on this log file.
