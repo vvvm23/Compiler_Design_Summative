@@ -45,6 +45,66 @@ def read_file(path):
         exit()
     return file_dict
 
+class Node:
+    def __init__(self, name):
+        self.productions = []
+        self.name = name
+    def add_production(self, production):
+        self.productions.append(production)
+    def __str__(self):
+        return self.name
+
+def fo_to_nodes(fo_dict):
+    nodes = {}
+    # Connectives
+    nodes['conn1'] = Node('conn1')
+    nodes['conn2'] = Node('conn2')
+    for conn in fo_dict['connectives']:
+        if conn == "\\neg":
+            nodes['conn1'].add_production(['\\neg'])
+            continue
+        nodes['conn2'].add_production([conn])
+
+    # Constants
+    nodes['const'] = Node('const')
+    for const in fo_dict['constants']:
+        nodes['const'].add_production([const])
+    
+    # Equality
+    nodes['eq'] = Node('eq')
+    for eq in fo_dict['equality']:
+        nodes['eq'].add_production([eq])
+
+    # Variables
+    nodes['var'] = Node('var')
+    for var in fo_dict['variables']:
+        nodes['var'].add_production([var])
+
+    # Quantifiers
+    nodes['quan'] = Node('quan')
+    for quan in fo_dict['quantifiers']:
+        nodes['quan'].add_production([quan])
+
+    # Predicates
+    nodes['pred'] = Node('pred')
+    for pred in fo_dict['predicates']:
+        nodes['pred'].add_production([pred[0], '('] + ([nodes['var'], ',']*pred[1])[:-1] + [')'])
+
+    # Formula
+    nodes['form'] = Node('form')
+    nodes['form'].add_production([nodes['form'], nodes['conn2'], nodes['form']])
+    nodes['form'].add_production([nodes['conn1'], nodes['form']])
+    nodes['form'].add_production([nodes['quan'], nodes['var'], nodes['form']])
+    nodes['form'].add_production([nodes['const'], nodes['eq'], nodes['const']])
+    nodes['form'].add_production([nodes['const'], nodes['eq'], nodes['var']])
+    nodes['form'].add_production([nodes['var'], nodes['eq'], nodes['const']])
+    nodes['form'].add_production([nodes['var'], nodes['eq'], nodes['var']])
+    nodes['form'].add_production([nodes['pred']])
+    nodes['form'].add_production([])
+
+    for prod in nodes['form'].productions:
+        print(' '.join(str(x) for x in prod))
+
 # TODO: Convert some symbols to escaped versions
 def print_grammar(fo_dict):
     productions = []
@@ -120,6 +180,9 @@ def print_grammar(fo_dict):
     pprint(terminals)
     pprint(productions)
 
+def parse():
+    pass
+
 if __name__ == "__main__":
     # TODO: Ask more details on this log file.
     LOG_PATH = "./log.txt"
@@ -131,6 +194,4 @@ if __name__ == "__main__":
 
     file_path = sys.argv[1]
     fo_dict = read_file(file_path)
-
-    pprint(fo_dict)
-    print_grammar(fo_dict)
+    fo_to_nodes(fo_dict)
