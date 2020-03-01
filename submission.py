@@ -107,7 +107,7 @@ class PredictiveParser:
         variables = self.symbols['variables']
         for v in variables:
             if self.lookahead == v:
-                code = self.match(v)
+                self.match(v)
                 return 0
         
         # syntax
@@ -117,7 +117,7 @@ class PredictiveParser:
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
-                code = self.match(c)
+                self.match(c)
                 return 0
 
         # syntax
@@ -127,7 +127,7 @@ class PredictiveParser:
         equalities = self.symbols['equalities']
         for e in equalities:
             if self.lookahead == e:
-                code = self.match(e)
+                self.match(e)
                 return 0
         # syntax
         return 1
@@ -136,7 +136,7 @@ class PredictiveParser:
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
-                code = self.match(c)
+                self.match(c)
                 return 0
         # syntax
         return 1
@@ -145,7 +145,7 @@ class PredictiveParser:
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
-                code = self.match(c)
+                self.match(c)
                 return 0
         # syntax
         return 1
@@ -154,7 +154,7 @@ class PredictiveParser:
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
-                code = self.match(q)
+                self.match(q)
                 return 0
         # syntax
         return 1
@@ -164,13 +164,13 @@ class PredictiveParser:
         for p in predicates:
             if self.lookahead == p[0]:
                 code = self.match(p[0])
-                code = self.match('(')
+                code = code if code else self.match('(')
                 for i in range(p[1]-1):
-                    code = self.variable()
-                    code = self.match(',')
-                code = self.variable()
-                code = self.match(')')
-                return 0
+                    code = code if code else self.variable()
+                    code = code if code else self.match(',')
+                code = code if code else self.variable()
+                code = code if code else self.match(')')
+                return code
         # syntax
         return 1
 
