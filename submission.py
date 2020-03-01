@@ -112,11 +112,19 @@ def parse_file(path, parser):
 
     current_field = None
     for l in file_lines:
-        print(l[:-1])
+        # Get field name if possible
         z = re.match(r"(.*):", l)
         if z:
             current_field = z.groups()[0]
-    
+            values = l.split()[1:]
+        else:
+            values = l.split()
+
+        print(current_field)
+        print(values)
+        
+
+        print()
 
     f.close()
 
