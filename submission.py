@@ -46,7 +46,7 @@ class PredictiveParser:
         return 1 
 
     def formulaR(self):
-        if self.lookahead in self.symbols['connectives']:
+        if self.lookahead in self.symbols['connectives2']:
            code = self.connective2()
            code = self.formula()
         else:
@@ -58,7 +58,7 @@ class PredictiveParser:
             code = self.predicates()
         elif self.lookahead in self.symbols['quantifiers']:
             code = self.quantifier()
-        elif self.lookahead in self.symbols['conn1']:
+        elif self.lookahead in self.symbols['connectives1']:
             code = self.connective1()
         elif self.lookahead == '(':
             # try all possibilities
