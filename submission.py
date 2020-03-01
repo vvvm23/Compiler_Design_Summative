@@ -101,7 +101,18 @@ class PredictiveParser:
                 break
 
     def predicates(self):
-        pass
+        predicates = self.symbols['predicates']
+        for p in predicates:
+            if self.lookahead == p[0]:
+                code = self.match(p[0])
+                code = self.match('(')
+                for i in range(p[1]-1):
+                    code = self.variable()
+                    code = self.match(',')
+                code = self.variable()
+                code = self.match(')')
+                break
+
 
 def parse_file(path, parser):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
