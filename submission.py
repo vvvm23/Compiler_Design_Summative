@@ -174,7 +174,6 @@ class PredictiveParser:
         # syntax
         return 1
 
-
 def parse_file(path, parser):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
@@ -196,7 +195,11 @@ def parse_file(path, parser):
         if current_field == "formula":
             split_values = []
             for v in values:
-                split = [x for x in re.split(r"(\W)", v) if not x == ''] 
+                print(v)
+                # Add to first [] to add additional 'inner word' characters
+                split = [x for x in re.findall(r"[\w\\]+|[,()]", v) if not x == ''] 
+                print(split)
+                print()
                 split_values = split_values + split
             values = split_values
 
@@ -210,7 +213,7 @@ def parse_file(path, parser):
 
     # Last connective is always negation
     parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
-    parser.symbols['connectives1'] = parser.symbols['connectives'][-1]
+    parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
 
     pprint(parser.symbols)
     f.close()
@@ -231,7 +234,7 @@ if __name__ == '__main__':
     file_path = sys.argv[1]
     if not parse_file(file_path, parser) == "OK":
         exit()
-    if parser.parse(parser.symbols['formula']):
-        print("ERROR: Syntax Error")
-    else:
-        print("Good.")
+    # if parser.parse(parser.symbols['formula']):
+        # print("ERROR: Syntax Error")
+    # else:
+        # print("Good.")
