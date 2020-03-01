@@ -120,9 +120,14 @@ def parse_file(path, parser):
         else:
             values = l.split()
 
+        if current_field == "formula":
+            for v in values:
+                pass
+
         print(current_field)
         print(values)
         
+        parser.symbols[current_field].append(values)
 
         print()
 
@@ -135,6 +140,7 @@ if __name__ == '__main__':
         print("Invalid arguments!")
         print("python {sys.argv[0]} input_file")
         exit()
-
+    
+    parser = PredictiveParser()
     file_path = sys.argv[1]
-    parse_file(file_path, None)
+    parse_file(file_path, parser)
