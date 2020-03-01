@@ -195,11 +195,8 @@ def parse_file(path, parser):
         if current_field == "formula":
             split_values = []
             for v in values:
-                print(v)
                 # Add to first [] to add additional 'inner word' characters
                 split = [x for x in re.findall(r"[\w\\]+|[,()]", v) if not x == ''] 
-                print(split)
-                print()
                 split_values = split_values + split
             values = split_values
 
@@ -212,6 +209,16 @@ def parse_file(path, parser):
         parser.symbols[current_field] = parser.symbols[current_field] + values
 
     # Last connective is always negation
+    if not len(parser.symbols['connectives']) == 5:
+        print("ERROR: Input file was missing some connectives")
+        return "FAIL"
+    if not len(parser.symbols['quantifiers']) == 2:
+        print("ERROR: Input file was missing some quantifiers")
+        return "FAIL"
+    if not len(parser.symbols['equality']) == 1:
+        print("ERROR: Input file was missing some equalities")
+        return "FAIL"
+
     parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
     parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
 
