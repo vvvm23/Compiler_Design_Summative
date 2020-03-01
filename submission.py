@@ -54,26 +54,31 @@ class PredictiveParser:
     def formulaR(self):
         if self.lookahead in self.symbols['connectives2']:
            code = self.connective2()
-           code = self.formula()
+           code = code if code else self.formula() # If zero check formula, else just skip 
+           return code
         else:
             # Not syntax, as can return nothing (e case)
-            pass
+            return 0
 
     def formula(self):
         if self.lookahead in [x[0] for x in self.symbols['predicates']]:
             code = self.predicates()
+            code = code if code else self.formulaR()
         elif self.lookahead in self.symbols['quantifiers']:
             code = self.quantifier()
+            code = code if code else self.variable()
+            code = code if code else self.formula()
         elif self.lookahead in self.symbols['connectives1']:
             code = self.connective1()
+            code = code if code else self.formula()
         elif self.lookahead == '(':
             # try all possibilities
             self.match('(')
-            if self.variable():
+            if not self.variable():
                 pass
-            elif self.constant():
+            elif not self.constant():
                 pass
-            elif self.formula():
+            elif not self.formula():
                 # kill early
                 code = self.match(')')
                 code = self.formulaR()
@@ -83,9 +88,9 @@ class PredictiveParser:
 
             code = self.equality()
 
-            if self.variable():
+            if not self.variable():
                 pass
-            elif self.constant():
+            elif not self.constant():
                 pass
             else:
                 # Syntax
@@ -97,6 +102,7 @@ class PredictiveParser:
         else:
             # Syntax Error
             pass
+        return code
     def variable(self):
         variables = self.symbols['variables']
         for v in variables:
@@ -183,6 +189,7 @@ def parse_file(path, parser):
         if z:
             current_field = z.groups()[0]
             values = l.split()[1:]
+            seen_fields.append(current_field)
         else:
             values = l.split()
 
@@ -207,6 +214,10 @@ def parse_file(path, parser):
 
     pprint(parser.symbols)
     f.close()
+    if not set(seen_fields) == REQUIRED_FIELDS:
+        print("ERROR: Input file was missing fields!")
+        return "FAIL"
+    return "OK"
 
 if __name__ == '__main__':
     LOG_PATH = "./log.txt"
@@ -218,4 +229,6 @@ if __name__ == '__main__':
     
     parser = PredictiveParser()
     file_path = sys.argv[1]
-    parse_file(file_path, parser)
+    if not parse_file(file_path, parser) == "OK":
+        exit()
+    parser.parse(parser.symbols['formula'])
