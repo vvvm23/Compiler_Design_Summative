@@ -38,6 +38,8 @@ class PredictiveParser:
         self.index = 0
         self.symbols = defaultdict(list)
 
+    # code 0: match
+    # code 1: syntax error
     def parse(self, string):
         self.string = string
         self.index = 0
@@ -209,6 +211,14 @@ def parse_file(path, parser):
         parser.symbols[current_field] = parser.symbols[current_field] + values
 
     # Last connective is always negation
+    parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
+    parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
+
+    pprint(parser.symbols)
+    f.close()
+    if not set(seen_fields) == REQUIRED_FIELDS:
+        print("ERROR: Input file was missing fields!")
+        return "FAIL"
     if not len(parser.symbols['connectives']) == 5:
         print("ERROR: Input file was missing some connectives")
         return "FAIL"
@@ -219,14 +229,6 @@ def parse_file(path, parser):
         print("ERROR: Input file was missing some equalities")
         return "FAIL"
 
-    parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
-    parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
-
-    pprint(parser.symbols)
-    f.close()
-    if not set(seen_fields) == REQUIRED_FIELDS:
-        print("ERROR: Input file was missing fields!")
-        return "FAIL"
     return "OK"
 
 if __name__ == '__main__':
