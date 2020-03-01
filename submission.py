@@ -38,6 +38,12 @@ class PredictiveParser:
         self.index = 0
         self.symbols = defaultdict(list)
 
+    def parse(self, string):
+        self.string = string
+        self.index = 0
+        self.lookahead = string[0]
+        code = self.formula()
+
     def match(self, c):
         if self.lookahead == c:
             self.index += 1
