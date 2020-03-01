@@ -5,6 +5,7 @@ import sys
 import re
 
 # TODO: forbid ( form ) only as result (perform simple check at end) <01-03-20, alewx> #
+# TODO: stretch, fuzzy finder to recommend suggestions  <01-03-20, alex> #
 '''
 Production Rules:
     var     -> x_1 | ... | x_n
@@ -44,17 +45,49 @@ class PredictiveParser:
             return "OK"
         return "SYNTAX_ERROR"
 
+    def formulaR(self):
+        if self.lookahead in self.symbols['connectives']:
+           code = self.connective2()
+           code = self.formula()
+        else:
+            # Not syntax, as can return nothing (e case)
+            pass
+
     def formula(self):
-        if self.lookahead == None:
-            pass
-        elif self.lookahead == None:
-            pass
-        elif self.lookahead == None:
-            pass
-        elif self.lookahead == None:
-            pass
-        elif self.lookahead == None:
-            pass
+        if self.lookahead in [x[0] for x in self.symbols['predicates']]:
+            code = self.predicates()
+        elif self.lookahead in self.symbols['quantifiers']:
+            code = self.quantifier()
+        elif self.lookahead in self.symbols['conn1']:
+            code = self.connective1()
+        elif self.lookahead == '(':
+            # try all possibilities
+            self.match('(')
+            if self.variable():
+                pass
+            elif self.constant():
+                pass
+            elif self.formula():
+                # kill early
+                code = self.match(')')
+                code = self.formulaR()
+            else:
+                # Syntax
+                pass
+
+            code = self.equality()
+
+            if self.variable():
+                pass
+            elif self.constant():
+                pass
+            else:
+                # Syntax
+                pass
+
+            code = self.match(')')
+            code = self.formulaR()
+
         else:
             # Syntax Error
             pass
@@ -63,42 +96,56 @@ class PredictiveParser:
         for v in variables:
             if self.lookahead == v:
                 code = self.match(v)
-                break
+                return 0
+        
+        # syntax
+        return 1
 
     def constant(self):
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
                 code = self.match(c)
-                break
+                return 0
+
+        # syntax
+        return 1
         
     def equality(self):
         equalities = self.symbols['equalities']
         for e in equalities:
             if self.lookahead == e:
                 code = self.match(e)
-                break
+                return 0
+        # syntax
+        return 1
 
     def connective2(self):
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
                 code = self.match(c)
-                break
+                return 0
+        # syntax
+        return 1
 
     def connective1(self):
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
                 code = self.match(c)
-                break
+                return 0
+        # syntax
+        return 1
 
     def quantifier(self):
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
                 code = self.match(q)
-                break
+                return 0
+        # syntax
+        return 1
 
     def predicates(self):
         predicates = self.symbols['predicates']
@@ -111,7 +158,9 @@ class PredictiveParser:
                     code = self.match(',')
                 code = self.variable()
                 code = self.match(')')
-                break
+                return 0
+        # syntax
+        return 1
 
 
 def parse_file(path, parser):
