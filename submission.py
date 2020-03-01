@@ -121,16 +121,21 @@ def parse_file(path, parser):
             values = l.split()
 
         if current_field == "formula":
+            split_values = []
             for v in values:
-                pass
+                split = [x for x in re.split(r"(\W)", v) if not x == ''] 
+                split_values = split_values + split
+            values = split_values
 
-        print(current_field)
-        print(values)
-        
-        parser.symbols[current_field].append(values)
+        if current_field == "predicates":
+            predicate_pairs = []
+            for p in values:
+                predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
+            values = predicate_pairs
 
-        print()
+        parser.symbols[current_field] = parser.symbols[current_field] + values
 
+    pprint(parser.symbols)
     f.close()
 
 if __name__ == '__main__':
