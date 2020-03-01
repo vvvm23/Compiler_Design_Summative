@@ -42,7 +42,7 @@ class PredictiveParser:
         self.string = string
         self.index = 0
         self.lookahead = string[0]
-        code = self.formula()
+        return self.formula()
 
     def match(self, c):
         if self.lookahead == c:
@@ -80,13 +80,13 @@ class PredictiveParser:
                 pass
             elif not self.formula():
                 # kill early
-                code = self.match(')')
-                code = self.formulaR()
+                code = code if code else self.match(')')
+                code = code if code else self.formulaR()
             else:
                 # Syntax
-                pass
+                code = 1
 
-            code = self.equality()
+            code = code if code else self.equality()
 
             if not self.variable():
                 pass
@@ -94,14 +94,14 @@ class PredictiveParser:
                 pass
             else:
                 # Syntax
-                pass
+                code = 1
 
-            code = self.match(')')
-            code = self.formulaR()
+            code = code if code else self.match(')')
+            code = code if code else self.formulaR()
 
         else:
             # Syntax Error
-            pass
+            code = 1
         return code
     def variable(self):
         variables = self.symbols['variables']
@@ -231,4 +231,7 @@ if __name__ == '__main__':
     file_path = sys.argv[1]
     if not parse_file(file_path, parser) == "OK":
         exit()
-    parser.parse(parser.symbols['formula'])
+    if parser.parse(parser.symbols['formula']):
+        print("ERROR: Syntax Error")
+    else:
+        print("Good.")
