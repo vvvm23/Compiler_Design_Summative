@@ -4,6 +4,31 @@ import matplotlib.pyplot as plt # For visualising graph
 import sys 
 import re
 
+'''
+Production Rules:
+    var     -> x_1 | ... | x_n
+
+    const   -> c_1 | ... | c_n
+
+    pred    -> P_1 (\\var , ... , \\var ) | ...
+
+    eq      -> =
+
+    conn1   -> \\neg
+
+    conn2   -> \\land | \\lor | \\implies | \\iff
+
+    quan    -> \\exists | \\forall
+
+    form    -> \\pred \\formR | ( \\var == \\var ) \\formR | ( \\var == \\const ) \\formR
+            |  ( \\const == \\var ) \\formR | ( \\const == \\const ) \\formR |
+            |  \\quan \\var \\form | \\conn1 \\form
+            |  ( \\form ) \\formR
+
+    formR   -> \\conn2 \\form || e
+
+'''
+
 class PredictiveParser:
     def __init__(self):
         self.lookahead = None
@@ -19,8 +44,19 @@ class PredictiveParser:
         return "SYNTAX_ERROR"
 
     def formula(self):
-        pass
-    
+        if self.lookahead == None:
+            pass
+        elif self.lookahead == None:
+            pass
+        elif self.lookahead == None:
+            pass
+        elif self.lookahead == None:
+            pass
+        elif self.lookahead == None:
+            pass
+        else:
+            # Syntax Error
+            pass
     def variable(self):
         variables = self.symbols['variables']
         for v in variables:
