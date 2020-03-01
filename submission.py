@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt # For visualising graph
 import sys 
 import re
 
+# TODO: forbid ( form ) only as result (perform simple check at end) <01-03-20, alewx> #
 '''
 Production Rules:
     var     -> x_1 | ... | x_n
@@ -102,6 +103,23 @@ class PredictiveParser:
     def predicates(self):
         pass
 
+def parse_file(path, parser):
+    REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
+    seen_fields = []
+
+    f = open(path, mode='r')
+    file_lines = f.readlines()
+
+    current_field = None
+    for l in file_lines:
+        print(l[:-1])
+        z = re.match(r"(.*):", l)
+        if z:
+            current_field = z.groups()[0]
+    
+
+    f.close()
+
 if __name__ == '__main__':
     LOG_PATH = "./log.txt"
 
@@ -111,3 +129,4 @@ if __name__ == '__main__':
         exit()
 
     file_path = sys.argv[1]
+    parse_file(file_path, None)
