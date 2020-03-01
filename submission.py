@@ -42,8 +42,8 @@ class PredictiveParser:
         if self.lookahead == c:
             self.index += 1
             self.lookahead = self.string[self.index]
-            return "OK"
-        return "SYNTAX_ERROR"
+            return 0
+        return 1 
 
     def formulaR(self):
         if self.lookahead in self.symbols['connectives']:
@@ -194,6 +194,10 @@ def parse_file(path, parser):
             values = predicate_pairs
 
         parser.symbols[current_field] = parser.symbols[current_field] + values
+
+    # Last connective is always negation
+    parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
+    parser.symbols['connectives1'] = parser.symbols['connectives'][-1]
 
     pprint(parser.symbols)
     f.close()
