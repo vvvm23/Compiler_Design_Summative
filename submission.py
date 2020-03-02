@@ -78,6 +78,11 @@ class PredictiveParser:
             return 0
 
     def formula(self, parent):
+        self.terminal_count['formula']+=1
+        node_id = f"formula_{self.terminal_count['formula']}"
+        self.G.add_node(node_id)
+        self.G.add_edge(parent, node_id)
+
         if self.lookahead in [x[0] for x in self.symbols['predicates']]:
             node_id = f"predicate_{self.index}"
             self.G.add_node(node_id)
@@ -100,8 +105,10 @@ class PredictiveParser:
         elif self.lookahead == '(':
             # try all possibilities
             code = self.match('(')
-            self.G.add_node('(')
-            self.G.add_edge(parent, '(')
+            self.terminal_count['(']+=1
+            node_id = f"(_{self.terminal_count['(']}"
+            self.G.add_node(node_id)
+            self.G.add_edge(parent, node_id)
             if not self.variable(parent):
                 pass
             elif not self.constant(parent):
@@ -109,8 +116,10 @@ class PredictiveParser:
             elif not self.formula(parent):
                 # kill early
                 code = code if code else self.match(')')
-                self.G.add_node(')')
-                self.G.add_edge(parent, ')')
+                self.terminal_count[')']+=1
+                node_id = f")_{self.terminal_count[')']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 code = code if code else self.formulaR(parent)
                 return code
             else:
@@ -128,8 +137,10 @@ class PredictiveParser:
                 code = 1
 
             code = code if code else self.match(')')
-            self.G.add_node(')')
-            self.G.add_edge(parent, ')')
+            self.terminal_count[')']+=1
+            node_id = f")_{self.terminal_count[')']}"
+            self.G.add_node(node_id)
+            self.G.add_edge(parent, node_id)
             code = code if code else self.formulaR(parent)
 
         else:
