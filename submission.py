@@ -70,8 +70,8 @@ class PredictiveParser:
         return 1 
 
     def formulaR(self, parent):
-        self.terminal_count['formulaR']+=1
-        node_id = f"formulaR_{self.terminal_count['formulaR']}"
+        self.terminal_count['formR']+=1
+        node_id = f"formR_{self.terminal_count['formR']}"
         self.G.add_node(node_id)
         self.G.add_edge(parent, node_id)
         if self.lookahead in self.symbols['connectives2']:
@@ -86,8 +86,8 @@ class PredictiveParser:
             return 0
 
     def formula(self, parent):
-        self.terminal_count['formula']+=1
-        node_id = f"formula_{self.terminal_count['formula']}"
+        self.terminal_count['form']+=1
+        node_id = f"form_{self.terminal_count['form']}"
         self.G.add_node(node_id)
         if parent:
             self.G.add_edge(parent, node_id)
@@ -97,16 +97,10 @@ class PredictiveParser:
             code = 1
             self.throw_syntax_error("UNKNOWN_SYMBOL")
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
-            node_id = f"predicate_{self.index}"
-            self.G.add_node(node_id)
-            self.G.add_edge(parent, node_id)
-            code = self.predicates(node_id)
+            code = self.predicates(parent)
             code = code if code else self.formulaR(parent)
         elif self.lookahead in self.symbols['quantifiers']:
-            node_id = f"quantifier_{self.index}"
-            self.G.add_node(node_id)
-            self.G.add_edge(parent, node_id)
-            code = self.quantifier(node_id)
+            code = self.quantifier(parent)
             code = code if code else self.variable(parent)
             code = code if code else self.formula(parent)
         elif self.lookahead in self.symbols['connectives1']:
@@ -298,6 +292,12 @@ class PredictiveParser:
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
+                self.terminal_count['quan']+=1
+                node_id = f"quan_{self.terminal_count['quan']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[q]+=1
                 node_id = f"{q}_{self.terminal_count[q]}"
                 self.G.add_node(node_id)
@@ -315,6 +315,12 @@ class PredictiveParser:
         predicates = self.symbols['predicates']
         for p in predicates:
             if self.lookahead == p[0]:
+                self.terminal_count['pred']+=1
+                node_id = f"pred_{self.terminal_count['pred']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 code = self.match(p[0])
                 self.terminal_count[p[0]]+=1
                 node_id = f"{p[0]}_{self.terminal_count[p[0]]}"
