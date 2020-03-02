@@ -32,43 +32,49 @@ Production Rules:
     formR   -> \\conn2 \\form || e
 '''
 
+# Predictive Parser Class
 class PredictiveParser:
     def __init__(self):
         self.lookahead = None
         self.string = None
         self.index = 0
-        self.syntax_code = "OK"
-        self.symbols = defaultdict(list)
-        self.terminal_count = defaultdict(int)
-        self.G = nx.DiGraph()
+        self.syntax_code = "OK" # Default syntax code is "OK"!
+        self.symbols = defaultdict(list) # Dictionary containing information on symbols
+        # TODO: misleading name. <02-03-20, alex> #
+        self.terminal_count = defaultdict(int) # Counts how many times a symbol appears in order to give unique label in graph
+        self.G = nx.DiGraph() # Parse tree for displaying later
 
+    # TODO: some further checks may be required here <02-03-20, alex> #
+    # Simply updates the syntax error code
     def throw_syntax_error(self, code):
-        # Change only to first error found
-        # if self.syntax_code == "OK":
         self.syntax_code = code
 
+    # Prints the parse tree using networkx and matplotlib
     def print_graph(self):
-        plt.title(' '.join(self.symbols['formula']))
-        pos=graphviz_layout(self.G, prog='dot')
+        plt.title(' '.join(self.symbols['formula'])) # Display the input formula
+        pos=graphviz_layout(self.G, prog='dot') # defined position of nodes in G
+        # Draw the graph with transparent nodes and reduced font size
         nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]], font_size=8)
         plt.show()
 
-    # code 0: match
-    # code 1: syntax error
+    # start function to begin parsing token stream from
     def parse(self, string):
-        self.string = string
-        self.index = 0
-        self.lookahead = string[0]
+        self.string = string 
+        self.index = 0 
+        self.lookahead = string[0] # Set the initial lookahead
         return self.formula(None)
 
+    # Match c with the current lookahead
     def match(self, c):
         if self.lookahead == c:
             self.index += 1
-            if self.index < len(self.string):
+            if self.index < len(self.string): # Get next lookahead if available
                 self.lookahead = self.string[self.index]
             return 0
         return 1 
 
+    # function resolve formula left recursion
+    # formR -> conn2 form | e
     def formulaR(self, parent):
         self.terminal_count['formR']+=1
         node_id = f"formR_{self.terminal_count['formR']}"
@@ -79,55 +85,77 @@ class PredictiveParser:
            code = code if code else self.formula(node_id) # If zero check formula, else just skip 
            return code
         else:
-            # Not syntax, as can return nothing (e case)
+            # Not syntax error, as can return nothing (e case)
+            # Append "none" to graph to make this explicit
             self.terminal_count['none']+=1
             self.G.add_node(f"none_{self.terminal_count['none']}")
             self.G.add_edge(node_id, f"none_{self.terminal_count['none']}")
             return 0
 
+    # function to resolve form production rule.
+    # also the start symbol
+    # form -> many rules
     def formula(self, parent):
+        # Create formula node in graph
         self.terminal_count['form']+=1
         node_id = f"form_{self.terminal_count['form']}"
         self.G.add_node(node_id)
-        if parent:
+        if parent: # If it has a parent add an edge to it
             self.G.add_edge(parent, node_id)
         parent = node_id
         
+        # Check if lookahead is a recognised symbol
         if not self.lookahead in self.symbols['all']:
             code = 1
             self.throw_syntax_error("UNKNOWN_SYMBOL")
+        # Check if lookahead is a predicate
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
+            # form -> pred formR
             code = self.predicates(parent)
             code = code if code else self.formulaR(parent)
+        # Check if lookahead is a quantifier
         elif self.lookahead in self.symbols['quantifiers']:
+            # form -> quan var form
             code = self.quantifier(parent)
             code = code if code else self.variable(parent)
             code = code if code else self.formula(parent)
+        # Check if lookahead is in connectives with arity 1
         elif self.lookahead in self.symbols['connectives1']:
+            # form -> conn1 form
             code = self.connective1(parent)
             code = code if code else self.formula(parent)
+        # Check if lookahead opens a bracketed statement
         elif self.lookahead == '(':
             # try all possibilities
             code = self.match('(')
+            
+            # Add a bracket node to the graph
             self.terminal_count['(']+=1
             node_id = f"(_{self.terminal_count['(']}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
+            
+            # Check if lookahead is either variable, constant (continue) or formula (kill early)
             if not self.variable(parent):
                 pass
             elif not self.constant(parent):
                 pass
+            # form -> ( form ) formR
             elif not self.formula(parent):
                 # kill early
+                # Close bracketed statement
                 code = code if code else self.match(')')
+
+                # Add closing bracket node
                 self.terminal_count[')']+=1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
+
                 code = code if code else self.formulaR(parent)
                 return code
             else:
-                # Syntax
+                # Syntax Error
                 if self.lookahead in ['(', ')']:
                     self.throw_syntax_error("UNEX_BRACKET")
                 elif self.lookahead in [',']:
@@ -138,12 +166,15 @@ class PredictiveParser:
 
             code = code if code else self.equality(parent)
 
+            # Check if either variable or constant 
+            # form -> ( var|const eq var )
             if not self.variable(parent):
                 pass
+            # form -> ( var|cnst eq const )
             elif not self.constant(parent):
                 pass
             else:
-                # Syntax
+                # Syntax Error
                 if self.lookahead in ['(', ')']:
                     self.throw_syntax_error("UNEX_BRACKET")
                 elif self.lookahead in [',']:
@@ -153,10 +184,13 @@ class PredictiveParser:
                 code = 1
 
             code = code if code else self.match(')')
+
+            # Add closing bracket node
             self.terminal_count[')']+=1
             node_id = f")_{self.terminal_count[')']}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
+
             code = code if code else self.formulaR(parent)
         else:
             # Syntax Error
@@ -168,19 +202,25 @@ class PredictiveParser:
                 self.throw_syntax_error("UNEX_SYMBOL")
             code = 1
         return code
+
+    # var -> x_1 | ... | x_n
     def variable(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         variables = self.symbols['variables']
+        # TODO: this and similar could probably be made without for loop <02-03-20, alex> #
         for v in variables:
             if self.lookahead == v:
+                # If the lookahead matches a variable create variable node
                 self.terminal_count['var']+=1
                 node_id = f"var_{self.terminal_count['var']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create terminal node
                 self.terminal_count[v]+=1
                 node_id = f"{v}_{self.terminal_count[v]}"
                 self.G.add_node(node_id)
@@ -188,23 +228,27 @@ class PredictiveParser:
                 self.match(v)
                 return 0
         
-        # syntax
+        # syntax error
         self.throw_syntax_error("EX_VAR")
         return 1
 
+    # const -> C_1 | ... | C_n
     def constant(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
+                # If the lookahead matches a constant create const node
                 self.terminal_count['const']+=1
                 node_id = f"const_{self.terminal_count['const']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create terminal node
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
@@ -212,69 +256,81 @@ class PredictiveParser:
                 self.match(c)
                 return 0
 
-        # syntax
+        # syntax error
         self.throw_syntax_error("EX_CONST")
         return 1
-        
+    
+    # eq (EG) -> =
     def equality(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         equality = self.symbols['equality']
         for e in equality:
             if self.lookahead == e:
+                # If the lookahead matches an equality node create a eq node
                 self.terminal_count['eq']+=1
                 node_id = f"eq_{self.terminal_count['eq']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create terminal node
                 self.terminal_count[e]+=1
                 node_id = f"{e}_{self.terminal_count[e]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(e)
                 return 0
-        # syntax
+        # syntax error
         self.throw_syntax_error("EX_EQ")
         return 1
 
+    # form (EG) -> OR | AND | ... 
     def connective2(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
+                # If the lookahead matches a connective2 create conn2 node
                 self.terminal_count['conn2']+=1
                 node_id = f"conn2_{self.terminal_count['conn2']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create a terminal node
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(c)
                 return 0
-        # syntax
+        # syntax error
         self.throw_syntax_error("EX_CONN2")
         return 1
-
+    
+    # conn1 (EG) -> NEG
     def connective1(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
+                # If the lookahead matches a connective1 create a conn1 node
                 self.terminal_count['conn1']+=1
                 node_id = f"conn1_{self.terminal_count['conn1']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create terminal node
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
@@ -285,19 +341,23 @@ class PredictiveParser:
         self.throw_syntax_error("EX_CONN1")
         return 1
 
+    # quan (EG) -> EXISTS | FORALL
     def quantifier(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
+                # If the lookahead matches a quantifier create a quan node
                 self.terminal_count['quan']+=1
                 node_id = f"quan_{self.terminal_count['quan']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Create a terminal node
                 self.terminal_count[q]+=1
                 node_id = f"{q}_{self.terminal_count[q]}"
                 self.G.add_node(node_id)
@@ -308,46 +368,55 @@ class PredictiveParser:
         self.throw_syntax_error("EX_QUAN")
         return 1
 
+    # pred -> P ( var, ..., var ) | ...
     def predicates(self, parent):
+        # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         predicates = self.symbols['predicates']
         for p in predicates:
             if self.lookahead == p[0]:
+                # If the lookahead matches a predicate identifier create a pred node
                 self.terminal_count['pred']+=1
                 node_id = f"pred_{self.terminal_count['pred']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
+                # Add the pred identifier as a terminal node
                 code = self.match(p[0])
                 self.terminal_count[p[0]]+=1
                 node_id = f"{p[0]}_{self.terminal_count[p[0]]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
 
+                # If the next lookahead matches (, create a new node
                 code = code if code else self.match('(')
                 self.terminal_count['(']+=1
                 node_id = f"(_{self.terminal_count['(']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
 
+                # Check if the arity of the predicate is correct and contains only variables
+                # Create new nodes as we go
                 for i in range(p[1]-1):
                     code = code if code else self.variable(parent)
                     code = code if code else self.match(',')
                     self.terminal_count[',']+=1
                     node_id = f",_{self.terminal_count[',']}"
                     self.G.add_node(node_id)
-                    self.G.add_edge(parent, node_id) # hmm
+                    self.G.add_edge(parent, node_id)
+                # Final variable
                 code = code if code else self.variable(parent)
                 code = code if code else self.match(')')
                 self.terminal_count[')']+=1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
+
                 return code
-        # syntax
+        # syntax error
         self.throw_syntax_error("EX_PRED")
         return 1
 
