@@ -353,7 +353,10 @@ def parse_file(path, parser):
             for p in values:
                 predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
             values = predicate_pairs
-        if not current_field == "formula":
+        if current_field == "predicates":
+            parser.symbols['all'] = parser.symbols['all'] + [x[0] for x in values]
+
+        elif not current_field == "formula":
             parser.symbols['all'] = parser.symbols['all'] + values
         parser.symbols[current_field] = parser.symbols[current_field] + values
 
@@ -374,8 +377,6 @@ def parse_file(path, parser):
     if not len(parser.symbols['equality']) == 1:
         print("ERROR: Input file was missing some equalities")
         return "FAIL"
-    pprint(parser.symbols['all'])
-
     return "OK"
 
 if __name__ == '__main__':
