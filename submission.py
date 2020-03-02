@@ -38,6 +38,7 @@ class PredictiveParser:
         self.string = None
         self.index = 0
         self.symbols = defaultdict(list)
+        self.terminal_count = defaultdict(int)
         self.G = nx.DiGraph()
 
     def print_graph(self):
@@ -64,9 +65,13 @@ class PredictiveParser:
         return 1 
 
     def formulaR(self, parent):
+        self.terminal_count['formulaR']+=1
+        node_id = f"formulaR_{self.terminal_count['formulaR']}"
+        self.G.add_node(node_id)
+        self.G.add_edge(parent, node_id)
         if self.lookahead in self.symbols['connectives2']:
-           code = self.connective2(parent)
-           code = code if code else self.formula(parent) # If zero check formula, else just skip 
+           code = self.connective2(node_id)
+           code = code if code else self.formula(node_id) # If zero check formula, else just skip 
            return code
         else:
             # Not syntax, as can return nothing (e case)
@@ -135,8 +140,10 @@ class PredictiveParser:
         variables = self.symbols['variables']
         for v in variables:
             if self.lookahead == v:
-                self.G.add_node(v)
-                self.G.add_edge(parent, v)
+                self.terminal_count[v]+=1
+                node_id = f"{v}_{self.terminal_count[v]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(v)
                 return 0
         
@@ -147,8 +154,10 @@ class PredictiveParser:
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
-                self.G.add_node(c)
-                self.G.add_edge(parent, c)
+                self.terminal_count[c]+=1
+                node_id = f"{c}_{self.terminal_count[c]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(c)
                 return 0
 
@@ -159,8 +168,10 @@ class PredictiveParser:
         equality = self.symbols['equality']
         for e in equality:
             if self.lookahead == e:
-                self.G.add_node(e)
-                self.G.add_edge(parent, e)
+                self.terminal_count[e]+=1
+                node_id = f"{e}_{self.terminal_count[e]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(e)
                 return 0
         # syntax
@@ -170,8 +181,10 @@ class PredictiveParser:
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
-                self.G.add_node(c)
-                self.G.add_edge(parent, c)
+                self.terminal_count[c]+=1
+                node_id = f"{c}_{self.terminal_count[c]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(c)
                 return 0
         # syntax
@@ -181,8 +194,10 @@ class PredictiveParser:
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
-                self.G.add_node(c)
-                self.G.add_edge(parent, c)
+                self.terminal_count[c]+=1
+                node_id = f"{c}_{self.terminal_count[c]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(c)
                 return 0
         # syntax
@@ -192,8 +207,10 @@ class PredictiveParser:
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
-                self.G.add_node(q)
-                self.G.add_edge(parent, q)
+                self.terminal_count[q]+=1
+                node_id = f"{q}_{self.terminal_count[q]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 self.match(q)
                 return 0
         # syntax
@@ -204,20 +221,30 @@ class PredictiveParser:
         for p in predicates:
             if self.lookahead == p[0]:
                 code = self.match(p[0])
-                self.G.add_node(p[0]) #hmmmm
-                self.G.add_edge(parent, p[0])
+                self.terminal_count[p[0]]+=1
+                node_id = f"{p[0]}_{self.terminal_count[p[0]]}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+
                 code = code if code else self.match('(')
-                self.G.add_node('(')
-                self.G.add_edge(parent, '(')
+                self.terminal_count['(']+=1
+                node_id = f"(_{self.terminal_count['(']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+
                 for i in range(p[1]-1):
                     code = code if code else self.variable(parent)
                     code = code if code else self.match(',')
-                    self.G.add_node(',')
-                    self.G.add_edge(parent, ',') # hmm
+                    self.terminal_count[',']+=1
+                    node_id = f",_{self.terminal_count[',']}"
+                    self.G.add_node(node_id)
+                    self.G.add_edge(parent, node_id) # hmm
                 code = code if code else self.variable(parent)
                 code = code if code else self.match(')')
-                self.G.add_node(')')
-                self.G.add_edge(parent, ')')
+                self.terminal_count[')']+=1
+                node_id = f")_{self.terminal_count[')']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
                 return code
         # syntax
         return 1
