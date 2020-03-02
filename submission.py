@@ -3,7 +3,6 @@ from collections import defaultdict
 import matplotlib.pyplot as plt # For visualising graph
 import sys 
 import re
-import pdb; pdb.set_trace()
 
 # TODO: forbid ( form ) only as result (perform simple check at end) <01-03-20, alewx> #
 # TODO: stretch, fuzzy finder to recommend suggestions  <01-03-20, alex> #
@@ -207,7 +206,7 @@ def parse_file(path, parser):
             split_values = []
             for v in values:
                 # Add to first [] to add additional 'inner word' characters
-                split = [x for x in re.findall(r"[\w\\]+|[,()]", v) if not x == ''] 
+                split = [x for x in re.findall(r"[\w\\]+|[,()=]", v) if not x == ''] 
                 split_values = split_values + split
             values = split_values
 
@@ -243,13 +242,16 @@ def parse_file(path, parser):
 if __name__ == '__main__':
     LOG_PATH = "./log.txt"
 
-    if not len(sys.argv) == 2:
+    if not len(sys.argv) == 2 and not len(sys.argv) == 3:
         print("Invalid arguments!")
         print("python {sys.argv[0]} input_file")
         exit()
     
     parser = PredictiveParser()
     file_path = sys.argv[1]
+    if len(sys.argv) == 3:
+        import pdb; pdb.set_trace()
+
     if not parse_file(file_path, parser) == "OK":
         exit()
     print(parser.symbols['formula'])
