@@ -110,10 +110,7 @@ class PredictiveParser:
             code = code if code else self.variable(parent)
             code = code if code else self.formula(parent)
         elif self.lookahead in self.symbols['connectives1']:
-            node_id = f"conn1_{self.index}"
-            self.G.add_node(node_id)
-            self.G.add_edge(parent, node_id)
-            code = self.connective1(node_id)
+            code = self.connective1(parent)
             code = code if code else self.formula(parent)
         elif self.lookahead == '(':
             # try all possibilities
@@ -184,6 +181,12 @@ class PredictiveParser:
         variables = self.symbols['variables']
         for v in variables:
             if self.lookahead == v:
+                self.terminal_count['var']+=1
+                node_id = f"var_{self.terminal_count['var']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[v]+=1
                 node_id = f"{v}_{self.terminal_count[v]}"
                 self.G.add_node(node_id)
@@ -202,6 +205,12 @@ class PredictiveParser:
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
+                self.terminal_count['const']+=1
+                node_id = f"const_{self.terminal_count['const']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
@@ -220,6 +229,12 @@ class PredictiveParser:
         equality = self.symbols['equality']
         for e in equality:
             if self.lookahead == e:
+                self.terminal_count['eq']+=1
+                node_id = f"eq_{self.terminal_count['eq']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[e]+=1
                 node_id = f"{e}_{self.terminal_count[e]}"
                 self.G.add_node(node_id)
@@ -237,6 +252,12 @@ class PredictiveParser:
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
+                self.terminal_count['conn2']+=1
+                node_id = f"conn2_{self.terminal_count['conn2']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
@@ -254,6 +275,12 @@ class PredictiveParser:
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
+                self.terminal_count['conn1']+=1
+                node_id = f"conn1_{self.terminal_count['conn1']}"
+                self.G.add_node(node_id)
+                self.G.add_edge(parent, node_id)
+                parent = node_id
+
                 self.terminal_count[c]+=1
                 node_id = f"{c}_{self.terminal_count[c]}"
                 self.G.add_node(node_id)
