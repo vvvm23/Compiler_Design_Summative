@@ -1,6 +1,8 @@
 from pprint import pprint
 from collections import defaultdict
 import matplotlib.pyplot as plt # For visualising graph
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
 import sys 
 import re
 
@@ -28,7 +30,6 @@ Production Rules:
             |  ( \\form ) \\formR
 
     formR   -> \\conn2 \\form || e
-
 '''
 
 class PredictiveParser:
@@ -37,6 +38,13 @@ class PredictiveParser:
         self.string = None
         self.index = 0
         self.symbols = defaultdict(list)
+        self.G = nx.DiGraph()
+
+    def print_graph(self):
+        plt.title("Parse Tree")
+        pos=graphviz_layout(self.G, prog='dot')
+        nx.draw(self.G, pos, with_labels=True, arrows=False)
+        plt.show()
 
     # code 0: match
     # code 1: syntax error
@@ -178,6 +186,7 @@ class PredictiveParser:
         # syntax
         return 1
 
+# TODO: reserved words <02-03-20, alex> #
 def parse_file(path, parser):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
@@ -235,7 +244,7 @@ def parse_file(path, parser):
     return "OK"
 
 if __name__ == '__main__':
-    LOG_PATH = "./log.txt"
+    # LOG_PATH = "./log.txt"
 
     if not len(sys.argv) == 2 and not len(sys.argv) == 3:
         print("Invalid arguments!")
@@ -254,3 +263,4 @@ if __name__ == '__main__':
         print("ERROR: Syntax Error")
     else:
         print("Valid input string")
+        parser.print_graph()
