@@ -178,6 +178,9 @@ class PredictiveParser:
             code = 1
         return code
     def variable(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         variables = self.symbols['variables']
         for v in variables:
             if self.lookahead == v:
@@ -193,6 +196,9 @@ class PredictiveParser:
         return 1
 
     def constant(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
@@ -208,6 +214,9 @@ class PredictiveParser:
         return 1
         
     def equality(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         equality = self.symbols['equality']
         for e in equality:
             if self.lookahead == e:
@@ -222,6 +231,9 @@ class PredictiveParser:
         return 1
 
     def connective2(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
@@ -236,6 +248,9 @@ class PredictiveParser:
         return 1
 
     def connective1(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
@@ -250,6 +265,9 @@ class PredictiveParser:
         return 1
 
     def quantifier(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
@@ -264,6 +282,9 @@ class PredictiveParser:
         return 1
 
     def predicates(self, parent):
+        if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+            return 1
         predicates = self.symbols['predicates']
         for p in predicates:
             if self.lookahead == p[0]:
@@ -340,7 +361,6 @@ def parse_file(path, parser):
     parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
     parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
 
-    pprint(parser.symbols)
     f.close()
     if not set(seen_fields) == REQUIRED_FIELDS:
         print("ERROR: Input file was missing fields!")
@@ -354,6 +374,7 @@ def parse_file(path, parser):
     if not len(parser.symbols['equality']) == 1:
         print("ERROR: Input file was missing some equalities")
         return "FAIL"
+    pprint(parser.symbols['all'])
 
     return "OK"
 

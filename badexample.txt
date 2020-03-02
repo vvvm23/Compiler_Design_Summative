@@ -4,5 +4,5 @@ predicates: P[2] Q[1]
 equality: =
 connectives: \land \lor \implies \iff \neg
 quantifiers: \exists \forall
-formula:  x ( \exists y ( P(x,y) \implies \neg Q(x) )  
-\lor \exists z ( ( (C = z) \land Q(z) ) \land P(x,z) ) )
+formula: \forall T ( \exists y ( P(x,y) \implies \neg Q(x) )  
+\lor \exists z ( ( C = z \land Q(z) ) \land P(x,z) ) )
