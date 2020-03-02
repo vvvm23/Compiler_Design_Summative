@@ -379,6 +379,20 @@ def parse_file(path, parser):
         return "FAIL"
     return "OK"
 
+def print_productions(parser):
+    print("var -> " + ' | '.join(parser.symbols['variables']))
+    print("const -> " + ' | '.join(parser.symbols['constants']))
+    print("eq -> " + ' | '.join(parser.symbols['equality']))
+    print("conn1 -> " + ' | '.join(parser.symbols['connectives1']))
+    print("conn2 -> " + ' | '.join(parser.symbols['connectives2']))
+    print("quan -> " + ' | '.join(parser.symbols['quantifiers']))
+    print("pred -> " + ' | '.join(
+        x[0] + ' ( ' + 'var , ' * (x[1]-1) + 'var )'
+        for x in parser.symbols['predicates']
+    ))
+    print("formR -> conn2 form | e")
+    print("form -> pred formR | ( var eq var ) formR | ( var eq const ) formR | ( const eq var ) formR | ( const eq const ) formR | quan var form | conn1 form | ( form ) formR ")
+
 if __name__ == '__main__':
     # LOG_PATH = "./log.txt"
 
@@ -407,6 +421,10 @@ if __name__ == '__main__':
 
     if not parse_file(file_path, parser) == "OK":
         exit()
+    print("~~ PRODUCTIONS ~~")
+    print_productions(parser)
+    print("~~~~~~~~~~~~~~~~~\n")
+
     if parser.parse(parser.symbols['formula']):
         print(f"ERROR:\tSyntax Error! Position {parser.index}")
         print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
