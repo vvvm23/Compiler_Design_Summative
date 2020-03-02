@@ -3,6 +3,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt # For visualising graph
 import sys 
 import re
+import pdb; pdb.set_trace()
 
 # TODO: forbid ( form ) only as result (perform simple check at end) <01-03-20, alewx> #
 # TODO: stretch, fuzzy finder to recommend suggestions  <01-03-20, alex> #
@@ -51,6 +52,7 @@ class PredictiveParser:
             self.index += 1
             self.lookahead = self.string[self.index]
             return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         return 1 
 
     def formulaR(self):
@@ -75,7 +77,7 @@ class PredictiveParser:
             code = code if code else self.formula()
         elif self.lookahead == '(':
             # try all possibilities
-            self.match('(')
+            code = self.match('(')
             if not self.variable():
                 pass
             elif not self.constant():
@@ -111,6 +113,7 @@ class PredictiveParser:
             if self.lookahead == v:
                 self.match(v)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         
         # syntax
         return 1
@@ -121,6 +124,7 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
 
         # syntax
         return 1
@@ -131,6 +135,7 @@ class PredictiveParser:
             if self.lookahead == e:
                 self.match(e)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -140,6 +145,7 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -149,6 +155,7 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -158,6 +165,7 @@ class PredictiveParser:
             if self.lookahead == q:
                 self.match(q)
                 return 0
+        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -173,6 +181,7 @@ class PredictiveParser:
                 code = code if code else self.variable()
                 code = code if code else self.match(')')
                 return code
+        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -243,7 +252,8 @@ if __name__ == '__main__':
     file_path = sys.argv[1]
     if not parse_file(file_path, parser) == "OK":
         exit()
-    # if parser.parse(parser.symbols['formula']):
-        # print("ERROR: Syntax Error")
-    # else:
-        # print("Good.")
+    print(parser.symbols['formula'])
+    if parser.parse(parser.symbols['formula']):
+        print("ERROR: Syntax Error")
+    else:
+        print("Good.")
