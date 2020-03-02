@@ -52,7 +52,6 @@ class PredictiveParser:
             if self.index < len(self.string):
                 self.lookahead = self.string[self.index]
             return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         return 1 
 
     def formulaR(self):
@@ -201,7 +200,8 @@ def parse_file(path, parser):
             split_values = []
             for v in values:
                 # Add to first [] to add additional 'inner word' characters
-                split = [x for x in re.findall(r"[\w\\]+|[,()=]", v) if not x == ''] 
+                # TODO: does this generalise? <02-03-20,alex> #
+                split = [x for x in re.findall(r"[\w\\]+|[,()]|[=]*", v) if not x == ''] 
                 split_values = split_values + split
             values = split_values
 
@@ -250,7 +250,6 @@ if __name__ == '__main__':
     if not parse_file(file_path, parser) == "OK":
         exit()
     print(parser.symbols['formula'])
-    print(parser.symbols['formula'][40:46])
     if parser.parse(parser.symbols['formula']):
         print("ERROR: Syntax Error")
     else:
