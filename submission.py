@@ -44,7 +44,7 @@ class PredictiveParser:
     def print_graph(self):
         plt.title("Parse Tree")
         pos=graphviz_layout(self.G, prog='dot')
-        nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=(0.0,0.0,0.0,0.0))
+        nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]])
         plt.show()
 
     # code 0: match
@@ -74,6 +74,9 @@ class PredictiveParser:
            return code
         else:
             # Not syntax, as can return nothing (e case)
+            self.terminal_count['none']+=1
+            self.G.add_node(f"none_{self.terminal_count['none']}")
+            self.G.add_edge(node_id, f"none_{self.terminal_count['none']}")
             return 0
 
     def formula(self, parent):
