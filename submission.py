@@ -421,20 +421,26 @@ class PredictiveParser:
         return 1
 
 # TODO: reserved words <02-03-20, alex> #
+# function to parse file and check if its contents are valid
 def parse_file(path, parser):
+    # ensure file contains all required fields
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
 
+    # populate the symbols with some symbols that are always present
     parser.symbols['all'] = [',', '(', ')']
+
+    # Try to open the file
     try:
         f = open(path, mode='r')
     except Exception as e:
         print("ERROR: Failed to open file!")
         return "FAIL"
     file_lines = f.readlines()
+    f.close()
 
     current_field = None
-    for l in file_lines:
+    for l in file_lines: # Iterate through the lines in the file
         # Get field name if possible
         z = re.match(r"(.*):", l)
         if z:
@@ -442,34 +448,39 @@ def parse_file(path, parser):
             values = l.split()[1:]
             seen_fields.append(current_field)
         else:
-            values = l.split()
+            values = l.split() # continuing from a previous line 
 
+        # If the current field is a formula, deal with the special case
         if current_field == "formula":
             split_values = []
             for v in values:
                 # Add to first [] to add additional 'inner word' characters
+                # Second is special single characters
+                # Third is groups of special characters
                 # TODO: does this generalise? <02-03-20,alex> #
                 split = [x for x in re.findall(r"[\w\\]+|[,()]|[=]*", v) if not x == ''] 
-                split_values = split_values + split
+                split_values = split_values + split # rebuild values
             values = split_values
 
+        # if the current field is a predicate, deal with the special case
         if current_field == "predicates":
             predicate_pairs = []
             for p in values:
+                # Build pairs of (id, arity)
                 predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
             values = predicate_pairs
-        if current_field == "predicates":
             parser.symbols['all'] = parser.symbols['all'] + [x[0] for x in values]
 
-        elif not current_field == "formula":
+        elif not current_field == "formula": # add symbols to all (except for formula)
             parser.symbols['all'] = parser.symbols['all'] + values
+
+        # also add symbols to relevant field
         parser.symbols[current_field] = parser.symbols[current_field] + values
 
-    # Last connective is always negation
+    # Last connective is always negation, so seperate connectives out
     parser.symbols['connectives2'] = parser.symbols['connectives'][:-1]
     parser.symbols['connectives1'] = [parser.symbols['connectives'][-1]]
 
-    f.close()
     if not set(seen_fields) == REQUIRED_FIELDS:
         print("ERROR: Input file was missing fields!")
         return "FAIL"
@@ -484,6 +495,7 @@ def parse_file(path, parser):
         return "FAIL"
     return "OK"
 
+# Function to print the production rules based on the seen symbols
 def print_productions(parser):
     print("var -> " + ' | '.join(parser.symbols['variables']))
     print("const -> " + ' | '.join(parser.symbols['constants']))
@@ -498,7 +510,9 @@ def print_productions(parser):
     print("formR -> conn2 form | e")
     print("form -> pred formR | ( var eq var ) formR | ( var eq const ) formR | ( const eq var ) formR | ( const eq const ) formR | quan var form | conn1 form | ( form ) formR ")
 
+# Entry point to program
 if __name__ == '__main__':
+    # Print a helpful message!
     if not len(sys.argv) == 2 and not len(sys.argv) == 3:
         print("Invalid arguments!")
         print("python {sys.argv[0]} input_file")
@@ -506,9 +520,11 @@ if __name__ == '__main__':
     
     parser = PredictiveParser()
     file_path = sys.argv[1]
-    if len(sys.argv) == 3:
+    # TODO: remove this <02-03-20, alex> #
+    if len(sys.argv) == 3: # If there is a third argument, activate debugger!
         import pdb; pdb.set_trace()
 
+    # Define mappings between error codes and error messages
     ERROR_DICT = defaultdict(lambda: "GENERIC - Generic Syntax Error.")
     ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
     ERROR_DICT['EX_VAR'] = "EX_VAR - Expected Variable at this Position"
@@ -522,17 +538,22 @@ if __name__ == '__main__':
     ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
     ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position."
 
+    # Parse the specified file
     if not parse_file(file_path, parser) == "OK":
         exit()
+    
+    # Print the grammar productions
     print("~~ PRODUCTIONS ~~")
     print_productions(parser)
     print("~~~~~~~~~~~~~~~~~\n")
 
+    # Parse the formula
     if parser.parse(parser.symbols['formula']):
+        # If a syntax error, provide informtion
         print(f"ERROR:\tSyntax Error! Position {parser.index}")
         print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
         print(f"\t{ERROR_DICT[parser.syntax_code]}")
-
     else:
+        # If a valid formula, print out the graph
         print("Valid input string")
         parser.print_graph()
