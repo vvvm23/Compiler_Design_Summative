@@ -337,7 +337,8 @@ if __name__ == '__main__':
         exit()
     print(parser.symbols['formula'])
     if parser.parse(parser.symbols['formula']):
-        print("ERROR: Syntax Error")
+        print(f"ERROR:\tSyntax Error! Position {parser.index}")
+        print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
     else:
         print("Valid input string")
         parser.print_graph()
