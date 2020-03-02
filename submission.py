@@ -37,9 +37,15 @@ class PredictiveParser:
         self.lookahead = None
         self.string = None
         self.index = 0
+        self.syntax_code = "OK"
         self.symbols = defaultdict(list)
         self.terminal_count = defaultdict(int)
         self.G = nx.DiGraph()
+
+    def throw_syntax_error(self, code):
+        # Change only to first error found
+        # if self.syntax_code == "OK":
+        self.syntax_code = code
 
     def print_graph(self):
         plt.title("Parse Tree")
@@ -128,6 +134,12 @@ class PredictiveParser:
                 return code
             else:
                 # Syntax
+                if self.lookahead in ['(', ')']:
+                    self.throw_syntax_error("UNEX_BRACKET")
+                elif self.lookahead in [',']:
+                    self.throw_syntax_error("UNEX_COMMA")
+                else:
+                    self.throw_syntax_error("UNKNOWN_SYMBOL")
                 code = 1
 
             code = code if code else self.equality(parent)
@@ -138,6 +150,12 @@ class PredictiveParser:
                 pass
             else:
                 # Syntax
+                if self.lookahead in ['(', ')']:
+                    self.throw_syntax_error("UNEX_BRACKET")
+                elif self.lookahead in [',']:
+                    self.throw_syntax_error("UNEX_COMMA")
+                else:
+                    self.throw_syntax_error("UNKNOWN_SYMBOL")
                 code = 1
 
             code = code if code else self.match(')')
@@ -148,6 +166,12 @@ class PredictiveParser:
             code = code if code else self.formulaR(parent)
         else:
             # Syntax Error
+            if self.lookahead in ['(', ')']:
+                self.throw_syntax_error("UNEX_BRACKET")
+            elif self.lookahead in [',']:
+                self.throw_syntax_error("UNEX_COMMA")
+            else:
+                self.throw_syntax_error("UNKNOWN_SYMBOL")
             code = 1
         return code
     def variable(self, parent):
@@ -162,6 +186,7 @@ class PredictiveParser:
                 return 0
         
         # syntax
+        self.throw_syntax_error("EX_VAR")
         return 1
 
     def constant(self, parent):
@@ -176,6 +201,7 @@ class PredictiveParser:
                 return 0
 
         # syntax
+        self.throw_syntax_error("EX_CONST")
         return 1
         
     def equality(self, parent):
@@ -189,6 +215,7 @@ class PredictiveParser:
                 self.match(e)
                 return 0
         # syntax
+        self.throw_syntax_error("EX_EQ")
         return 1
 
     def connective2(self, parent):
@@ -202,6 +229,7 @@ class PredictiveParser:
                 self.match(c)
                 return 0
         # syntax
+        self.throw_syntax_error("EX_CONN2")
         return 1
 
     def connective1(self, parent):
@@ -215,6 +243,7 @@ class PredictiveParser:
                 self.match(c)
                 return 0
         # syntax
+        self.throw_syntax_error("EX_CONN1")
         return 1
 
     def quantifier(self, parent):
@@ -228,6 +257,7 @@ class PredictiveParser:
                 self.match(q)
                 return 0
         # syntax
+        self.throw_syntax_error("EX_QUAN")
         return 1
 
     def predicates(self, parent):
@@ -261,6 +291,7 @@ class PredictiveParser:
                 self.G.add_edge(parent, node_id)
                 return code
         # syntax
+        self.throw_syntax_error("EX_PRED")
         return 1
 
 # TODO: reserved words <02-03-20, alex> #
@@ -333,12 +364,25 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         import pdb; pdb.set_trace()
 
+    ERROR_DICT = defaultdict(lambda: "GENERIC - Generic Syntax Error.")
+    ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
+    ERROR_DICT['EX_VAR'] = "EX_VAR - Expected Variable at this Position"
+    ERROR_DICT['EX_CONST'] = "EX_CONST - Expected Constant at this Position"
+    ERROR_DICT['EX_EQ'] = "EQ_EQ - Expected Equality Symbol at this Position"
+    ERROR_DICT['EX_CONN2'] = "EX_CONN2 - Expected Connective with 2-arity at this Position."
+    ERROR_DICT['EX_CONN1'] = "EX_CONN1 - Expected Connective with 1-arity at this Position"
+    ERROR_DICT['EX_QUAN'] = "EX_QUAN - Expected a Quantifier at this Position."
+    ERROR_DICT['EX_PRED'] = "EX_PRED - Expected a Predicate at this Position."
+    ERROR_DICT['UNEX_BRACKET'] = "UNEX_BRACKET - Unexpected Bracket at this Position."
+    ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
+
     if not parse_file(file_path, parser) == "OK":
         exit()
-    print(parser.symbols['formula'])
     if parser.parse(parser.symbols['formula']):
         print(f"ERROR:\tSyntax Error! Position {parser.index}")
         print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
+        print(f"\t{ERROR_DICT[parser.syntax_code]}")
+
     else:
         print("Valid input string")
         parser.print_graph()
