@@ -52,7 +52,8 @@ class PredictiveParser:
         self.string = string
         self.index = 0
         self.lookahead = string[0]
-        return self.formula()
+        self.G.add_node(f"formula_{self.index}")
+        return self.formula(f"formula_{self.index}")
 
     def match(self, c):
         if self.lookahead == c:
@@ -62,126 +63,161 @@ class PredictiveParser:
             return 0
         return 1 
 
-    def formulaR(self):
+    def formulaR(self, parent):
         if self.lookahead in self.symbols['connectives2']:
-           code = self.connective2()
-           code = code if code else self.formula() # If zero check formula, else just skip 
+           code = self.connective2(parent)
+           code = code if code else self.formula(parent) # If zero check formula, else just skip 
            return code
         else:
             # Not syntax, as can return nothing (e case)
             return 0
 
-    def formula(self):
+    def formula(self, parent):
         if self.lookahead in [x[0] for x in self.symbols['predicates']]:
-            code = self.predicates()
-            code = code if code else self.formulaR()
+            node_id = f"predicate_{self.index}"
+            self.G.add_node(node_id)
+            self.G.add_edge(parent, node_id)
+            code = self.predicates(node_id)
+            code = code if code else self.formulaR(node_id)
         elif self.lookahead in self.symbols['quantifiers']:
-            code = self.quantifier()
-            code = code if code else self.variable()
-            code = code if code else self.formula()
+            node_id = f"quantifier_{self.index}"
+            self.G.add_node(node_id)
+            self.G.add_edge(parent, node_id)
+            code = self.quantifier(node_id)
+            code = code if code else self.variable(node_id)
+            code = code if code else self.formula(node_id)
         elif self.lookahead in self.symbols['connectives1']:
-            code = self.connective1()
-            code = code if code else self.formula()
+            node_id = f"conn1_{self.index}"
+            self.G.add_node(node_id)
+            self.G.add_edge(parent, node_id)
+            code = self.connective1(node_id)
+            code = code if code else self.formula(node_id)
         elif self.lookahead == '(':
             # try all possibilities
             code = self.match('(')
-            if not self.variable():
+            self.G.add_node('(')
+            self.G.add_edge(parent, '(')
+            if not self.variable(parent):
                 pass
-            elif not self.constant():
+            elif not self.constant(parent):
                 pass
-            elif not self.formula():
+            elif not self.formula(parent):
                 # kill early
                 code = code if code else self.match(')')
-                code = code if code else self.formulaR()
+                self.G.add_node(')')
+                self.G.add_edge(parent, ')')
+                code = code if code else self.formulaR(parent)
                 return code
             else:
                 # Syntax
                 code = 1
 
-            code = code if code else self.equality()
+            code = code if code else self.equality(parent)
 
-            if not self.variable():
+            if not self.variable(parent):
                 pass
-            elif not self.constant():
+            elif not self.constant(parent):
                 pass
             else:
                 # Syntax
                 code = 1
 
             code = code if code else self.match(')')
-            code = code if code else self.formulaR()
+            self.G.add_node(')')
+            self.G.add_edge(parent, ')')
+            code = code if code else self.formulaR(parent)
 
         else:
             # Syntax Error
             code = 1
         return code
-    def variable(self):
+    def variable(self, parent):
         variables = self.symbols['variables']
         for v in variables:
             if self.lookahead == v:
+                self.G.add_node(v)
+                self.G.add_edge(parent, v)
                 self.match(v)
                 return 0
         
         # syntax
         return 1
 
-    def constant(self):
+    def constant(self, parent):
         constants = self.symbols['constants']
         for c in constants:
             if self.lookahead == c:
+                self.G.add_node(c)
+                self.G.add_edge(parent, c)
                 self.match(c)
                 return 0
 
         # syntax
         return 1
         
-    def equality(self):
+    def equality(self, parent):
         equality = self.symbols['equality']
         for e in equality:
             if self.lookahead == e:
+                self.G.add_node(e)
+                self.G.add_edge(parent, e)
                 self.match(e)
                 return 0
         # syntax
         return 1
 
-    def connective2(self):
+    def connective2(self, parent):
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
             if self.lookahead == c:
+                self.G.add_node(c)
+                self.G.add_edge(parent, c)
                 self.match(c)
                 return 0
         # syntax
         return 1
 
-    def connective1(self):
+    def connective1(self, parent):
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
             if self.lookahead == c:
+                self.G.add_node(c)
+                self.G.add_edge(parent, c)
                 self.match(c)
                 return 0
         # syntax
         return 1
 
-    def quantifier(self):
+    def quantifier(self, parent):
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
             if self.lookahead == q:
+                self.G.add_node(q)
+                self.G.add_edge(parent, q)
                 self.match(q)
                 return 0
         # syntax
         return 1
 
-    def predicates(self):
+    def predicates(self, parent):
         predicates = self.symbols['predicates']
         for p in predicates:
             if self.lookahead == p[0]:
                 code = self.match(p[0])
+                self.G.add_node(p[0]) #hmmmm
+                self.G.add_edge(parent, p[0])
                 code = code if code else self.match('(')
+                self.G.add_node('(')
+                self.G.add_edge(parent, '(')
                 for i in range(p[1]-1):
-                    code = code if code else self.variable()
+                    code = code if code else self.variable(parent)
                     code = code if code else self.match(',')
-                code = code if code else self.variable()
+                    self.G.add_node(',')
+                    self.G.add_edge(parent, ',') # hmm
+                code = code if code else self.variable(parent)
                 code = code if code else self.match(')')
+                self.G.add_node(')')
+                self.G.add_edge(parent, ')')
                 return code
         # syntax
         return 1
