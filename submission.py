@@ -49,7 +49,8 @@ class PredictiveParser:
     def match(self, c):
         if self.lookahead == c:
             self.index += 1
-            self.lookahead = self.string[self.index]
+            if self.index < len(self.string):
+                self.lookahead = self.string[self.index]
             return 0
         print(f"Failed at {self.index} {self.lookahead}")
         return 1 
@@ -85,6 +86,7 @@ class PredictiveParser:
                 # kill early
                 code = code if code else self.match(')')
                 code = code if code else self.formulaR()
+                return code
             else:
                 # Syntax
                 code = 1
@@ -112,7 +114,6 @@ class PredictiveParser:
             if self.lookahead == v:
                 self.match(v)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         
         # syntax
         return 1
@@ -123,18 +124,16 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
 
         # syntax
         return 1
         
     def equality(self):
-        equalities = self.symbols['equalities']
-        for e in equalities:
+        equality = self.symbols['equality']
+        for e in equality:
             if self.lookahead == e:
                 self.match(e)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -144,7 +143,6 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -154,7 +152,6 @@ class PredictiveParser:
             if self.lookahead == c:
                 self.match(c)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -164,7 +161,6 @@ class PredictiveParser:
             if self.lookahead == q:
                 self.match(q)
                 return 0
-        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -180,7 +176,6 @@ class PredictiveParser:
                 code = code if code else self.variable()
                 code = code if code else self.match(')')
                 return code
-        print(f"Failed at {self.index} {self.lookahead}")
         # syntax
         return 1
 
@@ -255,7 +250,8 @@ if __name__ == '__main__':
     if not parse_file(file_path, parser) == "OK":
         exit()
     print(parser.symbols['formula'])
+    print(parser.symbols['formula'][40:46])
     if parser.parse(parser.symbols['formula']):
         print("ERROR: Syntax Error")
     else:
-        print("Good.")
+        print("Valid input string")
