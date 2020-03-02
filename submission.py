@@ -48,7 +48,7 @@ class PredictiveParser:
         self.syntax_code = code
 
     def print_graph(self):
-        plt.title("Parse Tree")
+        plt.title(' '.join(self.symbols['formula']))
         pos=graphviz_layout(self.G, prog='dot')
         nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]])
         plt.show()
@@ -101,20 +101,20 @@ class PredictiveParser:
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
             code = self.predicates(node_id)
-            code = code if code else self.formulaR(node_id)
+            code = code if code else self.formulaR(parent)
         elif self.lookahead in self.symbols['quantifiers']:
             node_id = f"quantifier_{self.index}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
             code = self.quantifier(node_id)
-            code = code if code else self.variable(node_id)
-            code = code if code else self.formula(node_id)
+            code = code if code else self.variable(parent)
+            code = code if code else self.formula(parent)
         elif self.lookahead in self.symbols['connectives1']:
             node_id = f"conn1_{self.index}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
             code = self.connective1(node_id)
-            code = code if code else self.formula(node_id)
+            code = code if code else self.formula(parent)
         elif self.lookahead == '(':
             # try all possibilities
             code = self.match('(')
@@ -324,8 +324,11 @@ def parse_file(path, parser):
     seen_fields = []
 
     parser.symbols['all'] = [',', '(', ')']
-
-    f = open(path, mode='r')
+    try:
+        f = open(path, mode='r')
+    except Exception as e:
+        print("ERROR: Failed to open file!")
+        return "FAIL"
     file_lines = f.readlines()
 
     current_field = None
@@ -394,8 +397,6 @@ def print_productions(parser):
     print("form -> pred formR | ( var eq var ) formR | ( var eq const ) formR | ( const eq var ) formR | ( const eq const ) formR | quan var form | conn1 form | ( form ) formR ")
 
 if __name__ == '__main__':
-    # LOG_PATH = "./log.txt"
-
     if not len(sys.argv) == 2 and not len(sys.argv) == 3:
         print("Invalid arguments!")
         print("python {sys.argv[0]} input_file")
