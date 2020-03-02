@@ -92,8 +92,11 @@ class PredictiveParser:
         if parent:
             self.G.add_edge(parent, node_id)
         parent = node_id
-
-        if self.lookahead in [x[0] for x in self.symbols['predicates']]:
+        
+        if not self.lookahead in self.symbols['all']:
+            code = 1
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
+        elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
             node_id = f"predicate_{self.index}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
@@ -139,7 +142,7 @@ class PredictiveParser:
                 elif self.lookahead in [',']:
                     self.throw_syntax_error("UNEX_COMMA")
                 else:
-                    self.throw_syntax_error("UNKNOWN_SYMBOL")
+                    self.throw_syntax_error("UNEX_SYMBOL")
                 code = 1
 
             code = code if code else self.equality(parent)
@@ -155,7 +158,7 @@ class PredictiveParser:
                 elif self.lookahead in [',']:
                     self.throw_syntax_error("UNEX_COMMA")
                 else:
-                    self.throw_syntax_error("UNKNOWN_SYMBOL")
+                    self.throw_syntax_error("UNEX_SYMBOL")
                 code = 1
 
             code = code if code else self.match(')')
@@ -171,7 +174,7 @@ class PredictiveParser:
             elif self.lookahead in [',']:
                 self.throw_syntax_error("UNEX_COMMA")
             else:
-                self.throw_syntax_error("UNKNOWN_SYMBOL")
+                self.throw_syntax_error("UNEX_SYMBOL")
             code = 1
         return code
     def variable(self, parent):
@@ -299,6 +302,8 @@ def parse_file(path, parser):
     REQUIRED_FIELDS = set(["variables", "constants", "predicates", "equality", "connectives", "quantifiers", "formula"])
     seen_fields = []
 
+    parser.symbols['all'] = [',', '(', ')']
+
     f = open(path, mode='r')
     file_lines = f.readlines()
 
@@ -327,7 +332,8 @@ def parse_file(path, parser):
             for p in values:
                 predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
             values = predicate_pairs
-
+        if not current_field == "formula":
+            parser.symbols['all'] = parser.symbols['all'] + values
         parser.symbols[current_field] = parser.symbols[current_field] + values
 
     # Last connective is always negation
@@ -375,6 +381,7 @@ if __name__ == '__main__':
     ERROR_DICT['EX_PRED'] = "EX_PRED - Expected a Predicate at this Position."
     ERROR_DICT['UNEX_BRACKET'] = "UNEX_BRACKET - Unexpected Bracket at this Position."
     ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
+    ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position."
 
     if not parse_file(file_path, parser) == "OK":
         exit()
