@@ -50,7 +50,7 @@ class PredictiveParser:
     def print_graph(self):
         plt.title(' '.join(self.symbols['formula']))
         pos=graphviz_layout(self.G, prog='dot')
-        nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]])
+        nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]], font_size=8)
         plt.show()
 
     # code 0: match
