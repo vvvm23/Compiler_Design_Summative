@@ -53,8 +53,7 @@ class PredictiveParser:
         self.string = string
         self.index = 0
         self.lookahead = string[0]
-        self.G.add_node(f"formula_{self.index}")
-        return self.formula(f"formula_{self.index}")
+        return self.formula(None)
 
     def match(self, c):
         if self.lookahead == c:
@@ -81,7 +80,9 @@ class PredictiveParser:
         self.terminal_count['formula']+=1
         node_id = f"formula_{self.terminal_count['formula']}"
         self.G.add_node(node_id)
-        self.G.add_edge(parent, node_id)
+        if parent:
+            self.G.add_edge(parent, node_id)
+        parent = node_id
 
         if self.lookahead in [x[0] for x in self.symbols['predicates']]:
             node_id = f"predicate_{self.index}"
@@ -142,7 +143,6 @@ class PredictiveParser:
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
             code = code if code else self.formulaR(parent)
-
         else:
             # Syntax Error
             code = 1
