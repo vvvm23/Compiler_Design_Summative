@@ -82,25 +82,6 @@ class PredictiveParser:
             return 0
         return 1 
 
-    # function resolve formula left recursion
-    # formR -> conn2 form | e
-    def formulaR(self, parent):
-        self.terminal_count['formR']+=1
-        node_id = f"formR_{self.terminal_count['formR']}"
-        self.G.add_node(node_id)
-        self.G.add_edge(parent, node_id)
-        if self.lookahead in self.symbols['connectives2']:
-           code = self.connective2(node_id)
-           code = code if code else self.formula(node_id) # If zero check formula, else just skip 
-           return code
-        else:
-            # Not syntax error, as can return nothing (e case)
-            # Append "none" to graph to make this explicit
-            self.terminal_count['none']+=1
-            self.G.add_node(f"none_{self.terminal_count['none']}")
-            self.G.add_edge(node_id, f"none_{self.terminal_count['none']}")
-            return 0
-
     # function to resolve form production rule.
     # also the start symbol
     # form -> many rules
@@ -209,7 +190,6 @@ class PredictiveParser:
     def variable(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         variables = self.symbols['variables']
         # TODO: this and similar could probably be made without for loop <02-03-20, alex> #
@@ -231,14 +211,12 @@ class PredictiveParser:
                 return 0
         
         # syntax error
-        self.throw_syntax_error("EX_VAR")
         return 1
 
     # const -> C_1 | ... | C_n
     def constant(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         constants = self.symbols['constants']
         for c in constants:
@@ -259,14 +237,12 @@ class PredictiveParser:
                 return 0
 
         # syntax error
-        self.throw_syntax_error("EX_CONST")
         return 1
     
     # eq (EG) -> =
     def equality(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         equality = self.symbols['equality']
         for e in equality:
@@ -286,14 +262,12 @@ class PredictiveParser:
                 self.match(e)
                 return 0
         # syntax error
-        self.throw_syntax_error("EX_EQ")
         return 1
 
     # form (EG) -> OR | AND | ... 
     def connective2(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
@@ -313,14 +287,12 @@ class PredictiveParser:
                 self.match(c)
                 return 0
         # syntax error
-        self.throw_syntax_error("EX_CONN2")
         return 1
     
     # conn1 (EG) -> NEG
     def connective1(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
@@ -340,14 +312,12 @@ class PredictiveParser:
                 self.match(c)
                 return 0
         # syntax
-        self.throw_syntax_error("EX_CONN1")
         return 1
 
     # quan (EG) -> EXISTS | FORALL
     def quantifier(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
