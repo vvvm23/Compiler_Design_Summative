@@ -4,4 +4,4 @@ predicates: P[2] Q[1]
 equality: =
 connectives: \land \lor \implies \iff \neg
 quantifiers: \exists \forall
-formula: ( C = D ) \land (x = y)
+formula: (( C = D ) \land (x = y))

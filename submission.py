@@ -32,6 +32,12 @@ Production Rules:
     formR   -> \\conn2 \\form || e
 '''
 
+'''
+    var, const, pred, eq, conn1, conn2, quan same as before
+
+    form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form
+'''
+
 # Predictive Parser Class
 class PredictiveParser:
     def __init__(self):
@@ -70,6 +76,9 @@ class PredictiveParser:
             self.index += 1
             if self.index < len(self.string): # Get next lookahead if available
                 self.lookahead = self.string[self.index]
+            else:
+                self.lookahead = "" 
+                self.string.append("")
             return 0
         return 1 
 
@@ -112,7 +121,6 @@ class PredictiveParser:
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
             # form -> pred formR
             code = self.predicates(parent)
-            code = code if code else self.formulaR(parent)
         # Check if lookahead is a quantifier
         elif self.lookahead in self.symbols['quantifiers']:
             # form -> quan var form
@@ -142,17 +150,13 @@ class PredictiveParser:
                 pass
             # form -> ( form ) formR
             elif not self.formula(parent):
-                # kill early
-                # Close bracketed statement
+                code = code if code else self.connective2(parent)
+                code = code if code else self.formula(parent)
                 code = code if code else self.match(')')
-
-                # Add closing bracket node
-                self.terminal_count[')']+=1
+                self.terminal_count[')'] += 1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
-
-                code = code if code else self.formulaR(parent)
                 return code
             else:
                 # Syntax Error
@@ -184,6 +188,7 @@ class PredictiveParser:
                 code = 1
 
             code = code if code else self.match(')')
+            if code: self.throw_syntax_error("EX_BRACKET")
 
             # Add closing bracket node
             self.terminal_count[')']+=1
@@ -191,7 +196,6 @@ class PredictiveParser:
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
 
-            code = code if code else self.formulaR(parent)
         else:
             # Syntax Error
             if self.lookahead in ['(', ')']:
@@ -410,6 +414,7 @@ class PredictiveParser:
                 # Final variable
                 code = code if code else self.variable(parent)
                 code = code if code else self.match(')')
+                if code: self.throw_syntax_error('EX_BRACKET')
                 self.terminal_count[')']+=1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
