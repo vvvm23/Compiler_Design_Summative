@@ -6,7 +6,6 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import sys 
 import re
 
-# TODO: forbid ( form ) only as result (perform simple check at end) <01-03-20, alewx> #
 # TODO: stretch, fuzzy finder to recommend suggestions  <01-03-20, alex> #
 '''
 Production Rules:
@@ -39,7 +38,6 @@ class PredictiveParser:
         self.terminal_count = defaultdict(int) # Counts how many times a symbol appears in order to give unique label in graph
         self.G = nx.DiGraph() # Parse tree for displaying later
 
-    # TODO: some further checks may be required here <02-03-20, alex> #
     # Simply updates the syntax error code
     def throw_syntax_error(self, code):
         if self.syntax_code == "OK":
@@ -388,7 +386,6 @@ class PredictiveParser:
         # syntax error
         return 1
 
-# TODO: reserved words <02-03-20, alex> #
 # function to parse file and check if its contents are valid
 def parse_file(path, parser):
     # ensure file contains all required fields
@@ -430,11 +427,18 @@ def parse_file(path, parser):
                 split_values = split_values + split # rebuild values
             values = split_values
 
+        if not current_field in ["formula", "predicates"] and True in [x in parser.symbols['all'] for x in values]:
+            print("ERROR: Reserved keyword or conflicting token detected in input file!")
+            return "FAIL"
+
         # if the current field is a predicate, deal with the special case
         if current_field == "predicates":
             predicate_pairs = []
             for p in values:
                 # Build pairs of (id, arity)
+                if p[0] in parser.symbols['all']:
+                    print("ERROR: Reserved keyword or conflicting token detected in input file!")
+                    return "FAIL"
                 predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
             values = predicate_pairs
             parser.symbols['all'] = parser.symbols['all'] + [x[0] for x in values]
@@ -464,7 +468,6 @@ def parse_file(path, parser):
     return "OK"
 
 # Function to print the production rules based on the seen symbols
-# TODO: update formula and formulaR <03-03-20, alex> #
 def print_productions(parser):
     print("var -> " + ' | '.join(parser.symbols['variables']))
     print("const -> " + ' | '.join(parser.symbols['constants']))
