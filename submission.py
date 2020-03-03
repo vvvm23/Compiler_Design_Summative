@@ -24,20 +24,8 @@ Production Rules:
 
     quan    -> \\exists | \\forall
 
-    form    -> \\pred \\formR | ( \\var == \\var ) \\formR | ( \\var == \\const ) \\formR
-            |  ( \\const == \\var ) \\formR | ( \\const == \\const ) \\formR |
-            |  \\quan \\var \\form | \\conn1 \\form
-            |  ( \\form ) \\formR
-
-    formR   -> \\conn2 \\form || e
-'''
-
-'''
-    var, const, pred, eq, conn1, conn2, quan same as before
-
     form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form
 '''
-
 # Predictive Parser Class
 class PredictiveParser:
     def __init__(self):
@@ -91,7 +79,7 @@ class PredictiveParser:
 
     # function to resolve form production rule.
     # also the start symbol
-    # form -> many rules
+    # form -> many
     def formula(self, parent):
         # Create formula node in graph
         self.terminal_count['form']+=1
@@ -107,7 +95,7 @@ class PredictiveParser:
             code = 1
         # Check if lookahead is a predicate
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
-            # form -> pred formR
+            # form -> pred
             code = self.predicates(parent)
         # Check if lookahead is a quantifier
         elif self.lookahead in self.symbols['quantifiers']:
@@ -124,6 +112,7 @@ class PredictiveParser:
         # Check if lookahead opens a bracketed statement
         elif self.lookahead == '(':
             # try all possibilities
+            # not expensive to do as only formula recurses
             code = self.match('(')
             
             # Add a bracket node to the graph
@@ -137,7 +126,7 @@ class PredictiveParser:
                 pass
             elif not self.constant(parent):
                 pass
-            # form -> ( form ) formR
+            # form -> ( form conn2 form )
             elif not self.formula(parent):
                 code = code if code else self.connective2(parent)
                 if code: self.throw_syntax_error("EX_CONN2")
@@ -487,8 +476,7 @@ def print_productions(parser):
         x[0] + ' ( ' + 'var , ' * (x[1]-1) + 'var )'
         for x in parser.symbols['predicates']
     ))
-    print("formR -> conn2 form | e")
-    print("form -> pred formR | ( var eq var ) formR | ( var eq const ) formR | ( const eq var ) formR | ( const eq const ) formR | quan var form | conn1 form | ( form ) formR ")
+    print("form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form2")
 
 # Entry point to program
 if __name__ == '__main__':
