@@ -45,6 +45,7 @@ class PredictiveParser:
         self.string = None
         self.index = 0
         self.syntax_code = "OK" # Default syntax code is "OK"!
+        self.error_list = []
         self.symbols = defaultdict(list) # Dictionary containing information on symbols
         # TODO: misleading name. <02-03-20, alex> #
         self.terminal_count = defaultdict(int) # Counts how many times a symbol appears in order to give unique label in graph
@@ -53,7 +54,8 @@ class PredictiveParser:
     # TODO: some further checks may be required here <02-03-20, alex> #
     # Simply updates the syntax error code
     def throw_syntax_error(self, code):
-        self.syntax_code = code
+        if self.syntax_code == "OK":
+            self.syntax_code = code
 
     # Prints the parse tree using networkx and matplotlib
     def print_graph(self):
@@ -68,7 +70,11 @@ class PredictiveParser:
         self.string = string 
         self.index = 0 
         self.lookahead = string[0] # Set the initial lookahead
-        return self.formula(None)
+        code = self.formula(None)
+        if not self.index == len(self.string) - 1:
+            code = 1
+            self.throw_syntax_error("EX_END")
+        return code
 
     # Match c with the current lookahead
     def match(self, c):
@@ -77,6 +83,7 @@ class PredictiveParser:
             if self.index < len(self.string): # Get next lookahead if available
                 self.lookahead = self.string[self.index]
             else:
+                # TODO: is this correct? <03-03-20, alex> #
                 self.lookahead = "" 
                 self.string.append("")
             return 0
@@ -96,6 +103,7 @@ class PredictiveParser:
         
         # Check if lookahead is a recognised symbol
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             code = 1
         # Check if lookahead is a predicate
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
@@ -106,6 +114,7 @@ class PredictiveParser:
             # form -> quan var form
             code = self.quantifier(parent)
             code = code if code else self.variable(parent)
+            if code: self.throw_syntax_error("EX_VAR")
             code = code if code else self.formula(parent)
         # Check if lookahead is in connectives with arity 1
         elif self.lookahead in self.symbols['connectives1']:
@@ -131,8 +140,10 @@ class PredictiveParser:
             # form -> ( form ) formR
             elif not self.formula(parent):
                 code = code if code else self.connective2(parent)
+                if code: self.throw_syntax_error("EX_CONN2")
                 code = code if code else self.formula(parent)
                 code = code if code else self.match(')')
+                if code: self.throw_syntax_error("EX_BRACKET")
                 self.terminal_count[')'] += 1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
@@ -140,15 +151,11 @@ class PredictiveParser:
                 return code
             else:
                 # Syntax Error
-                if self.lookahead in ['(', ')']:
-                    pass
-                elif self.lookahead in [',']:
-                    pass
-                else:
-                    pass
                 code = 1
+                self.throw_syntax_error("UNEX_SYMBOL")
 
             code = code if code else self.equality(parent)
+            if code: self.throw_syntax_error("EX_EQ")
 
             # Check if either variable or constant 
             # form -> ( var|const eq var )
@@ -159,15 +166,11 @@ class PredictiveParser:
                 pass
             else:
                 # Syntax Error
-                if self.lookahead in ['(', ')']:
-                    pass
-                elif self.lookahead in [',']:
-                    pass
-                else:
-                    pass
+                self.throw_syntax_error("UNEX_SYMBOL")
                 code = 1
 
             code = code if code else self.match(')')
+            if code: self.throw_syntax_error("EX_BRACKET")
 
             # Add closing bracket node
             self.terminal_count[')']+=1
@@ -177,12 +180,7 @@ class PredictiveParser:
 
         else:
             # Syntax Error
-            if self.lookahead in ['(', ')']:
-                pass
-            elif self.lookahead in [',']:
-                pass
-            else:
-                pass
+            self.throw_syntax_error("UNEX_SYMBOL")
             code = 1
         return code
 
@@ -190,6 +188,7 @@ class PredictiveParser:
     def variable(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         variables = self.symbols['variables']
         # TODO: this and similar could probably be made without for loop <02-03-20, alex> #
@@ -217,6 +216,7 @@ class PredictiveParser:
     def constant(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         constants = self.symbols['constants']
         for c in constants:
@@ -243,6 +243,7 @@ class PredictiveParser:
     def equality(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         equality = self.symbols['equality']
         for e in equality:
@@ -268,6 +269,7 @@ class PredictiveParser:
     def connective2(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives2 = self.symbols['connectives2']
         for c in connectives2:
@@ -293,6 +295,7 @@ class PredictiveParser:
     def connective1(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         connectives1 = self.symbols['connectives1']
         for c in connectives1:
@@ -318,6 +321,7 @@ class PredictiveParser:
     def quantifier(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         quantifiers = self.symbols['quantifiers']
         for q in quantifiers:
@@ -343,6 +347,7 @@ class PredictiveParser:
     def predicates(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
+            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         predicates = self.symbols['predicates']
         for p in predicates:
@@ -363,6 +368,7 @@ class PredictiveParser:
 
                 # If the next lookahead matches (, create a new node
                 code = code if code else self.match('(')
+                if code: self.throw_syntax_error("EX_BRACKET")
                 self.terminal_count['(']+=1
                 node_id = f"(_{self.terminal_count['(']}"
                 self.G.add_node(node_id)
@@ -372,14 +378,18 @@ class PredictiveParser:
                 # Create new nodes as we go
                 for i in range(p[1]-1):
                     code = code if code else self.variable(parent)
+                    if code: self.throw_syntax_error("EX_VAR")
                     code = code if code else self.match(',')
+                    if code: self.throw_syntax_error("EX_COMMA")
                     self.terminal_count[',']+=1
                     node_id = f",_{self.terminal_count[',']}"
                     self.G.add_node(node_id)
                     self.G.add_edge(parent, node_id)
                 # Final variable
                 code = code if code else self.variable(parent)
+                if code: self.throw_syntax_error("EX_VAR")
                 code = code if code else self.match(')')
+                if code: self.throw_syntax_error("EX_BRACKET")
                 self.terminal_count[')']+=1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
@@ -465,6 +475,7 @@ def parse_file(path, parser):
     return "OK"
 
 # Function to print the production rules based on the seen symbols
+# TODO: update formula and formulaR <03-03-20, alex> #
 def print_productions(parser):
     print("var -> " + ' | '.join(parser.symbols['variables']))
     print("const -> " + ' | '.join(parser.symbols['constants']))
@@ -503,6 +514,9 @@ if __name__ == '__main__':
     ERROR_DICT['EX_CONN1'] = "EX_CONN1 - Expected Connective with 1-arity at this Position"
     ERROR_DICT['EX_QUAN'] = "EX_QUAN - Expected a Quantifier at this Position."
     ERROR_DICT['EX_PRED'] = "EX_PRED - Expected a Predicate at this Position."
+    ERROR_DICT['EX_BRACKET'] = "EX_BRACKET - Expected a bracket at this Position."
+    ERROR_DICT['EX_COMMA'] = "EX_COMMA - Expected a comma at this Position."
+    ERROR_DICT['EX_END'] = "EX_END - Expected end of string, but encountered more tokens."
     ERROR_DICT['UNEX_BRACKET'] = "UNEX_BRACKET - Unexpected Bracket at this Position."
     ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
     ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position."
