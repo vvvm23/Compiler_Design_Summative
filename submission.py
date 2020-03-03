@@ -116,7 +116,6 @@ class PredictiveParser:
         # Check if lookahead is a recognised symbol
         if not self.lookahead in self.symbols['all']:
             code = 1
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
         # Check if lookahead is a predicate
         elif self.lookahead in [x[0] for x in self.symbols['predicates']]:
             # form -> pred formR
@@ -161,11 +160,11 @@ class PredictiveParser:
             else:
                 # Syntax Error
                 if self.lookahead in ['(', ')']:
-                    self.throw_syntax_error("UNEX_BRACKET")
+                    pass
                 elif self.lookahead in [',']:
-                    self.throw_syntax_error("UNEX_COMMA")
+                    pass
                 else:
-                    self.throw_syntax_error("UNEX_SYMBOL")
+                    pass
                 code = 1
 
             code = code if code else self.equality(parent)
@@ -180,15 +179,14 @@ class PredictiveParser:
             else:
                 # Syntax Error
                 if self.lookahead in ['(', ')']:
-                    self.throw_syntax_error("UNEX_BRACKET")
+                    pass
                 elif self.lookahead in [',']:
-                    self.throw_syntax_error("UNEX_COMMA")
+                    pass
                 else:
-                    self.throw_syntax_error("UNEX_SYMBOL")
+                    pass
                 code = 1
 
             code = code if code else self.match(')')
-            if code: self.throw_syntax_error("EX_BRACKET")
 
             # Add closing bracket node
             self.terminal_count[')']+=1
@@ -199,11 +197,11 @@ class PredictiveParser:
         else:
             # Syntax Error
             if self.lookahead in ['(', ')']:
-                self.throw_syntax_error("UNEX_BRACKET")
+                pass
             elif self.lookahead in [',']:
-                self.throw_syntax_error("UNEX_COMMA")
+                pass
             else:
-                self.throw_syntax_error("UNEX_SYMBOL")
+                pass
             code = 1
         return code
 
@@ -369,14 +367,12 @@ class PredictiveParser:
                 self.match(q)
                 return 0
         # syntax
-        self.throw_syntax_error("EX_QUAN")
         return 1
 
     # pred -> P ( var, ..., var ) | ...
     def predicates(self, parent):
         # Check if the lookahead symbol is known
         if not self.lookahead in self.symbols['all']:
-            self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         predicates = self.symbols['predicates']
         for p in predicates:
@@ -414,7 +410,6 @@ class PredictiveParser:
                 # Final variable
                 code = code if code else self.variable(parent)
                 code = code if code else self.match(')')
-                if code: self.throw_syntax_error('EX_BRACKET')
                 self.terminal_count[')']+=1
                 node_id = f")_{self.terminal_count[')']}"
                 self.G.add_node(node_id)
@@ -422,7 +417,6 @@ class PredictiveParser:
 
                 return code
         # syntax error
-        self.throw_syntax_error("EX_PRED")
         return 1
 
 # TODO: reserved words <02-03-20, alex> #
