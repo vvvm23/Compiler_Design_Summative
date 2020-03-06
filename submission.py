@@ -498,7 +498,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         log_path = sys.argv[2]
 
-
     # Parse the specified file
     if not parse_file(file_path, parser) == "OK":
         exit()

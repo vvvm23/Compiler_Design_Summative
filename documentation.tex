@@ -1,0 +1,70 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry} 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\begin{document}
+\title{Software Methodologies: Compiler Design Summative}
+\author{vvvm23}
+\date{}
+\maketitle
+\hrule
+
+\section{Running the Program}
+
+\subsection{Prerequisites}
+
+The program requires the following prerequisites:
+
+\begin{itemize}
+    \item Python 3.7.4 must be installed.
+    \item graphviz must be installed. Package managers should have this but here is a gitlab link: https://gitlab.com/graphviz/graphviz/
+    \item Lab computers should have all packages except for pygraphviz which should be installed.
+\end{itemize}
+
+\subsection{Command Line Options}
+
+The program has the following positional command line arguments:
+\begin{itemize}
+    \item input\_path: Path to input file
+    \item log\_path: Path to the logging file. If not specified, defaults to log.txt
+\end{itemize}
+Run the program by running either:
+\begin{itemize}
+    \item python submission.py input.txt log.txt
+    \item python submission.py input.txt
+\end{itemize}
+\\
+
+\hrule
+
+\section{Output Files}
+\subsection{Productions}
+If the input file is valid the production rules for the grammar will be printed to the console (not the log file). The starting symbol is form.
+
+\subsection{Log file}
+
+If the input file was not valid this will be reflected in the console. There will be no changes to the log file.
+
+If the input file was valid and the formula was well formed, the program will show this in the console and write a similar success message in the log file.
+
+If the input file was valid but the formula has a syntax error, the program will display the error in the console and also display the error in the log file.
+
+Errors while parsing are formatted as such:
+\begin{enumerate}
+    \item Notify there is a syntax error and at what position.
+    \item Display the formula with the error highlighted in colour (in console) or surrounded by > > > < < < (log file).
+    \item Specific Error Code and explanation of it.
+    \item Additional information if available, such as a suggestion on corrections.
+\end{enumerate}
+
+\subsection{Parse Tree}
+
+If the input file was not valid or the formula in it was not valid, no parse tree will be saved to file.
+
+If the formula is well formed, the parse tree will be saved to tree.png
+
+tree.png will display the input formula at the top and below it will be the parse tree for the formula.
+
+\end{document}
+

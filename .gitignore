@@ -1,2 +1,8 @@
 log.txt
 tree.png
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+*.gz
