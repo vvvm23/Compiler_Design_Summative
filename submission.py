@@ -498,26 +498,34 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         log_path = sys.argv[2]
 
+
+    # Parse the specified file
+    if not parse_file(file_path, parser) == "OK":
+        exit()
+
     # Define mappings between error codes and error messages
-    ERROR_DICT = defaultdict(lambda: ("GENERIC - Generic Syntax Error.", None))
+    ERROR_DICT = defaultdict(lambda: "GENERIC - Generic Syntax Error.")
     ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
-    ERROR_DICT['EX_VAR'] = "EX_VAR - Expected Variable at this Position"
-    ERROR_DICT['EX_CONST'] = "EX_CONST - Expected Constant at this Position"
-    ERROR_DICT['EX_EQ'] = "EQ_EQ - Expected Equality Symbol at this Position"
-    ERROR_DICT['EX_CONN2'] = "EX_CONN2 - Expected Connective with 2-arity at this Position."
-    ERROR_DICT['EX_CONN1'] = "EX_CONN1 - Expected Connective with 1-arity at this Position"
-    ERROR_DICT['EX_QUAN'] = "EX_QUAN - Expected a Quantifier at this Position."
-    ERROR_DICT['EX_PRED'] = "EX_PRED - Expected a Predicate at this Position."
+    ERROR_DICT['EX_VAR'] = ("EX_VAR - Expected Variable at this Position\n"
+                            f"SUGG:\tDid you mean {' or '.join(parser.symbols['variables'])}?")
+    ERROR_DICT['EX_CONST'] = ("EX_CONST - Expected Constant at this Position\n"
+                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['constants'])}?")
+    ERROR_DICT['EX_EQ'] = ("EQ_EQ - Expected Equality Symbol at this Position\n"
+                           f"SUGG:\tDid you mean {' or '.join(parser.symbols['equality'])}?")
+    ERROR_DICT['EX_CONN2'] = ("EX_CONN2 - Expected Connective with 2-arity at this Position.\n"
+                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['conn2'])}?")
+    ERROR_DICT['EX_CONN1'] = ("EX_CONN1 - Expected Connective with 1-arity at this Position\n"
+                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['conn1'])}?")
+    ERROR_DICT['EX_QUAN'] = ("EX_QUAN - Expected a Quantifier at this Position.\n"
+                             f"SUGG:\tDid you mean {' or '.join(parser.symbols['quantifiers'])}?")
+    ERROR_DICT['EX_PRED'] = ("EX_PRED - Expected a Predicate at this Position.\n"
+                             f"SUGG:\tDid you mean {' or '.join(x[0] for x in parser.symbols['predicates'])}?")
     ERROR_DICT['EX_BRACKET'] = "EX_BRACKET - Expected a bracket at this Position."
     ERROR_DICT['EX_COMMA'] = "EX_COMMA - Expected a comma at this Position."
     ERROR_DICT['EX_END'] = "EX_END - Expected end of string, but encountered more tokens."
     ERROR_DICT['UNEX_BRACKET'] = "UNEX_BRACKET - Unexpected Bracket at this Position."
     ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
     ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position."
-
-    # Parse the specified file
-    if not parse_file(file_path, parser) == "OK":
-        exit()
     
     # Print the grammar productions
     print("~~ PRODUCTIONS ~~")
