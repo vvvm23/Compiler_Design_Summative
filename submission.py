@@ -513,9 +513,9 @@ if __name__ == '__main__':
     ERROR_DICT['EX_EQ'] = ("EQ_EQ - Expected Equality Symbol at this Position\n"
                            f"SUGG:\tDid you mean {' or '.join(parser.symbols['equality'])}?")
     ERROR_DICT['EX_CONN2'] = ("EX_CONN2 - Expected Connective with 2-arity at this Position.\n"
-                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['conn2'])}?")
+                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['connectives2'])}?")
     ERROR_DICT['EX_CONN1'] = ("EX_CONN1 - Expected Connective with 1-arity at this Position\n"
-                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['conn1'])}?")
+                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['connectives1'])}?")
     ERROR_DICT['EX_QUAN'] = ("EX_QUAN - Expected a Quantifier at this Position.\n"
                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['quantifiers'])}?")
     ERROR_DICT['EX_PRED'] = ("EX_PRED - Expected a Predicate at this Position.\n"
