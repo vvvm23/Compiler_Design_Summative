@@ -45,11 +45,13 @@ class PredictiveParser:
 
     # Prints the parse tree using networkx and matplotlib
     def print_graph(self):
-        plt.title(' '.join(self.symbols['formula'])) # Display the input formula
         pos=graphviz_layout(self.G, prog='dot') # defined position of nodes in G
         # Draw the graph with transparent nodes and reduced font size
+        plt.figure(1, figsize=(12,12))
+        plt.title(' '.join(self.symbols['formula'])) # Display the input formula
         nx.draw(self.G, pos, with_labels=True, arrows=False, node_color=[[0.0,0.0,0.0,0.0]], font_size=8)
-        plt.show()
+        plt.savefig("tree.png")
+        # plt.show(block=1)
 
     # start function to begin parsing token stream from
     def parse(self, string):
@@ -484,19 +486,20 @@ def print_productions(parser):
 # Entry point to program
 if __name__ == '__main__':
     # Print a helpful message!
-    if not len(sys.argv) == 2 and not len(sys.argv) == 3:
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
         print("Invalid arguments!")
-        print("python {sys.argv[0]} input_file")
+        print("python {sys.argv[0]} input_file [log_file]")
         exit()
     
     parser = PredictiveParser()
     file_path = sys.argv[1]
-    # TODO: remove this <02-03-20, alex> #
-    if len(sys.argv) == 3: # If there is a third argument, activate debugger!
-        import pdb; pdb.set_trace()
+    log_path = "log.txt"
+    # if log file path is specified, replace default
+    if len(sys.argv) == 3:
+        log_path = sys.argv[2]
 
     # Define mappings between error codes and error messages
-    ERROR_DICT = defaultdict(lambda: "GENERIC - Generic Syntax Error.")
+    ERROR_DICT = defaultdict(lambda: ("GENERIC - Generic Syntax Error.", None))
     ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
     ERROR_DICT['EX_VAR'] = "EX_VAR - Expected Variable at this Position"
     ERROR_DICT['EX_CONST'] = "EX_CONST - Expected Constant at this Position"
@@ -521,13 +524,19 @@ if __name__ == '__main__':
     print_productions(parser)
     print("~~~~~~~~~~~~~~~~~\n")
 
+    f = open(log_path, mode='w')
     # Parse the formula
     if parser.parse(parser.symbols['formula']):
         # If a syntax error, provide informtion
+        f.write(f"ERROR:\tSyntax Error! Position {parser.index}\n")
+        f.write('\t' + ''.join(f">>> {x} <<< " if i == parser.index else f"{x} " for i, x in enumerate(parser.string)) + '\n')
+        f.write(f"\t{ERROR_DICT[parser.syntax_code]}\n")
         print(f"ERROR:\tSyntax Error! Position {parser.index}")
         print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
         print(f"\t{ERROR_DICT[parser.syntax_code]}")
     else:
         # If a valid formula, print out the graph
-        print("Valid input string")
+        print("INFO:\tValid input string. See tree.png for parse tree")
+        f.write(f"INFO:\tValid Input String! See tree.png for parse tree\n")
         parser.print_graph()
+    f.close()
