@@ -1,6 +1,6 @@
-formula: A price E cost1 ( Same(cost1, price) A(ND ( NOT Non_zero(price) IFF (cost1 == 30) ) )
+formula: A price E cost1 ( Same(cost1, price) AND ( NOT Non_zero(price) IFF (cost1 == 30) ) )
 equality: ==
-connectives: A(ND OR IMPLIES IFF NOT
+connectives: AND OR IMPLIES IFF NOT
 quantifiers: E A
 variables: price cost1
 constants: 30 Z

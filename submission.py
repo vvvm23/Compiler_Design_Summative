@@ -397,7 +397,7 @@ def parse_file(path, parser):
 
     # populate the symbols with some symbols that are always present
     parser.symbols['all'] = [',', '(', ')']
-    FORBIDDEN_SUBSTRINGS = [',', '(', ')']
+    FORBIDDEN_SUBSTRINGS = [',', '(', ')', ':']
 
     # Try to open the file
     try:
@@ -426,7 +426,6 @@ def parse_file(path, parser):
                 # Add to first [] to add additional 'inner word' characters
                 # Second is special single characters
                 # Third is groups of special characters
-                # TODO: does this generalise? <02-03-20,alex> #
                 split = [x for x in re.findall(r"[\w\\]+|[,()]|[=]*", v) if not x == ''] 
                 split_values = split_values + split # rebuild values
             values = split_values
@@ -450,6 +449,9 @@ def parse_file(path, parser):
                 if True in check:
                     print("ERROR: Forbidden substring was found in a value")
                     return "FAIL"
+            if not len(values) == len(set(values)):
+                print("ERROR: Duplicate values in same class.")
+                return "FAIL"
             parser.symbols['all'] = parser.symbols['all'] + [x[0] for x in values]
 
         elif not current_field == "formula": # add symbols to all (except for formula)
@@ -459,6 +461,9 @@ def parse_file(path, parser):
                 if True in check:
                     print("ERROR: Forbidden substring was found in a value")
                     return "FAIL"
+            if not len(values) == len(set(values)):
+                print("ERROR: Duplicate values in same class.")
+                return "FAIL"
             parser.symbols['all'] = parser.symbols['all'] + values
 
         # also add symbols to relevant field
