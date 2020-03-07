@@ -36,7 +36,7 @@ class PredictiveParser:
         self.error_list = []
         self.symbols = defaultdict(list) # Dictionary containing information on symbols
         # TODO: misleading name. <02-03-20, alex> #
-        self.terminal_count = defaultdict(int) # Counts how many times a symbol appears in order to give unique label in graph
+        self.symbol_count = defaultdict(int) # Counts how many times a symbol appears in order to give unique label in graph
         self.G = nx.DiGraph() # Parse tree for displaying later
 
     # Simply updates the syntax error code
@@ -83,8 +83,8 @@ class PredictiveParser:
     # form -> many
     def formula(self, parent):
         # Create formula node in graph
-        self.terminal_count['form']+=1
-        node_id = f"form_{self.terminal_count['form']}"
+        self.symbol_count['form']+=1
+        node_id = f"form_{self.symbol_count['form']}"
         self.G.add_node(node_id)
         if parent: # If it has a parent add an edge to it
             self.G.add_edge(parent, node_id)
@@ -117,8 +117,8 @@ class PredictiveParser:
             code = self.match('(')
             
             # Add a bracket node to the graph
-            self.terminal_count['(']+=1
-            node_id = f"(_{self.terminal_count['(']}"
+            self.symbol_count['(']+=1
+            node_id = f"(_{self.symbol_count['(']}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
             
@@ -134,8 +134,8 @@ class PredictiveParser:
                 code = code if code else self.formula(parent)
                 code = code if code else self.match(')')
                 if code: self.throw_syntax_error("EX_BRACKET")
-                self.terminal_count[')'] += 1
-                node_id = f")_{self.terminal_count[')']}"
+                self.symbol_count[')'] += 1
+                node_id = f")_{self.symbol_count[')']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 return code
@@ -163,8 +163,8 @@ class PredictiveParser:
             if code: self.throw_syntax_error("EX_BRACKET")
 
             # Add closing bracket node
-            self.terminal_count[')']+=1
-            node_id = f")_{self.terminal_count[')']}"
+            self.symbol_count[')']+=1
+            node_id = f")_{self.symbol_count[')']}"
             self.G.add_node(node_id)
             self.G.add_edge(parent, node_id)
 
@@ -185,15 +185,15 @@ class PredictiveParser:
         for v in variables:
             if self.lookahead == v:
                 # If the lookahead matches a variable create variable node
-                self.terminal_count['var']+=1
-                node_id = f"var_{self.terminal_count['var']}"
+                self.symbol_count['var']+=1
+                node_id = f"var_{self.symbol_count['var']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create terminal node
-                self.terminal_count[v]+=1
-                node_id = f"{v}_{self.terminal_count[v]}"
+                self.symbol_count[v]+=1
+                node_id = f"{v}_{self.symbol_count[v]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(v)
@@ -212,15 +212,15 @@ class PredictiveParser:
         for c in constants:
             if self.lookahead == c:
                 # If the lookahead matches a constant create const node
-                self.terminal_count['const']+=1
-                node_id = f"const_{self.terminal_count['const']}"
+                self.symbol_count['const']+=1
+                node_id = f"const_{self.symbol_count['const']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create terminal node
-                self.terminal_count[c]+=1
-                node_id = f"{c}_{self.terminal_count[c]}"
+                self.symbol_count[c]+=1
+                node_id = f"{c}_{self.symbol_count[c]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(c)
@@ -239,15 +239,15 @@ class PredictiveParser:
         for e in equality:
             if self.lookahead == e:
                 # If the lookahead matches an equality node create a eq node
-                self.terminal_count['eq']+=1
-                node_id = f"eq_{self.terminal_count['eq']}"
+                self.symbol_count['eq']+=1
+                node_id = f"eq_{self.symbol_count['eq']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create terminal node
-                self.terminal_count[e]+=1
-                node_id = f"{e}_{self.terminal_count[e]}"
+                self.symbol_count[e]+=1
+                node_id = f"{e}_{self.symbol_count[e]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(e)
@@ -265,15 +265,15 @@ class PredictiveParser:
         for c in connectives2:
             if self.lookahead == c:
                 # If the lookahead matches a connective2 create conn2 node
-                self.terminal_count['conn2']+=1
-                node_id = f"conn2_{self.terminal_count['conn2']}"
+                self.symbol_count['conn2']+=1
+                node_id = f"conn2_{self.symbol_count['conn2']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create a terminal node
-                self.terminal_count[c]+=1
-                node_id = f"{c}_{self.terminal_count[c]}"
+                self.symbol_count[c]+=1
+                node_id = f"{c}_{self.symbol_count[c]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(c)
@@ -291,15 +291,15 @@ class PredictiveParser:
         for c in connectives1:
             if self.lookahead == c:
                 # If the lookahead matches a connective1 create a conn1 node
-                self.terminal_count['conn1']+=1
-                node_id = f"conn1_{self.terminal_count['conn1']}"
+                self.symbol_count['conn1']+=1
+                node_id = f"conn1_{self.symbol_count['conn1']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create terminal node
-                self.terminal_count[c]+=1
-                node_id = f"{c}_{self.terminal_count[c]}"
+                self.symbol_count[c]+=1
+                node_id = f"{c}_{self.symbol_count[c]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(c)
@@ -317,15 +317,15 @@ class PredictiveParser:
         for q in quantifiers:
             if self.lookahead == q:
                 # If the lookahead matches a quantifier create a quan node
-                self.terminal_count['quan']+=1
-                node_id = f"quan_{self.terminal_count['quan']}"
+                self.symbol_count['quan']+=1
+                node_id = f"quan_{self.symbol_count['quan']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Create a terminal node
-                self.terminal_count[q]+=1
-                node_id = f"{q}_{self.terminal_count[q]}"
+                self.symbol_count[q]+=1
+                node_id = f"{q}_{self.symbol_count[q]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 self.match(q)
@@ -343,24 +343,24 @@ class PredictiveParser:
         for p in predicates:
             if self.lookahead == p[0]:
                 # If the lookahead matches a predicate identifier create a pred node
-                self.terminal_count['pred']+=1
-                node_id = f"pred_{self.terminal_count['pred']}"
+                self.symbol_count['pred']+=1
+                node_id = f"pred_{self.symbol_count['pred']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
                 parent = node_id
 
                 # Add the pred identifier as a terminal node
                 code = self.match(p[0])
-                self.terminal_count[p[0]]+=1
-                node_id = f"{p[0]}_{self.terminal_count[p[0]]}"
+                self.symbol_count[p[0]]+=1
+                node_id = f"{p[0]}_{self.symbol_count[p[0]]}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
 
                 # If the next lookahead matches (, create a new node
                 code = code if code else self.match('(')
                 if code: self.throw_syntax_error("EX_BRACKET")
-                self.terminal_count['(']+=1
-                node_id = f"(_{self.terminal_count['(']}"
+                self.symbol_count['(']+=1
+                node_id = f"(_{self.symbol_count['(']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
 
@@ -371,8 +371,8 @@ class PredictiveParser:
                     if code: self.throw_syntax_error("EX_VAR")
                     code = code if code else self.match(',')
                     if code: self.throw_syntax_error("EX_COMMA")
-                    self.terminal_count[',']+=1
-                    node_id = f",_{self.terminal_count[',']}"
+                    self.symbol_count[',']+=1
+                    node_id = f",_{self.symbol_count[',']}"
                     self.G.add_node(node_id)
                     self.G.add_edge(parent, node_id)
                 # Final variable
@@ -380,8 +380,8 @@ class PredictiveParser:
                 if code: self.throw_syntax_error("EX_VAR")
                 code = code if code else self.match(')')
                 if code: self.throw_syntax_error("EX_BRACKET")
-                self.terminal_count[')']+=1
-                node_id = f")_{self.terminal_count[')']}"
+                self.symbol_count[')']+=1
+                node_id = f")_{self.symbol_count[')']}"
                 self.G.add_node(node_id)
                 self.G.add_edge(parent, node_id)
 
@@ -397,6 +397,7 @@ def parse_file(path, parser):
 
     # populate the symbols with some symbols that are always present
     parser.symbols['all'] = [',', '(', ')']
+    FORBIDDEN_SUBSTRINGS = [',', '(', ')']
 
     # Try to open the file
     try:
@@ -444,9 +445,20 @@ def parse_file(path, parser):
                     return "FAIL"
                 predicate_pairs.append((p[:p.find('[')], int(p[p.find('[') + 1:p.find(']')])))
             values = predicate_pairs
+            for v in values:
+                check = [fs in v[0] for fs in FORBIDDEN_SUBSTRINGS]
+                if True in check:
+                    print("ERROR: Forbidden substring was found in a value")
+                    return "FAIL"
             parser.symbols['all'] = parser.symbols['all'] + [x[0] for x in values]
 
         elif not current_field == "formula": # add symbols to all (except for formula)
+            # Check if forbidden substrings are in values
+            for v in values:
+                check = [fs in v for fs in FORBIDDEN_SUBSTRINGS]
+                if True in check:
+                    print("ERROR: Forbidden substring was found in a value")
+                    return "FAIL"
             parser.symbols['all'] = parser.symbols['all'] + values
 
         # also add symbols to relevant field
