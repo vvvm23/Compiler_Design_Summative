@@ -1,7 +1,7 @@
-variables: VAR1 VAR2 VAR3 VAR4 VAR5
-constants: CONST1 CONST2 CONST3 CONST4 CONST5
-predicates: PRED1[1] PRED2[2] PRED3[3] PRED4[4]
-equality: \EQ
+equality: EQ
 connectives: AND OR IMPLIES IFF NEG
 quantifiers: EXISTS FORALL
-formula: ( ( ( CONST1 \EQ CONST2 ) AND ( CONST1 \EQ VAR1 ) ) IFF ( ( VAR1 \EQ CONST1 ) AND ( VAR1 \EQ VAR2 ) ) ) 
+predicates: PRED1[1] PRED2[2] PRED3[3] PRED4[4]
+variables: VAR1 VAR2 VAR3 VAR4 VAR5
+formula: ( ( ( ( ( ( ( ( ( ( CONST1 EQ CONST2 ) ) ) ) ) ) ) ) ) ) 
+constants: CONST1 CONST2 CONST3 CONST4 CONST5

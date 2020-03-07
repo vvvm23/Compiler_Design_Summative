@@ -79,7 +79,7 @@ def write_to_file(formula, sub_dict, ran_order=False, fields=None):
 def call_program(py_path, ex_pass=True):
     print(f"This program should {'PASS' if ex_pass else 'FAIL'}")
     subprocess.run(["python", py_path, "test.txt"])
-    print()
+    print("\n")
 
 def main():
     # Stage 1 - Just try the base
@@ -88,20 +88,22 @@ def main():
     for formula in BASE_FORMULA:
         write_to_file(formula, sub_dict)
         call_program(sys.argv[1])
+    print("\n\n")
 
     # Stage 2 - Random IDs
     print("-- STAGE 2: Random Symbol Names --")
-    STAGE2_IT = 1
+    STAGE2_IT = 3
     for _ in range(STAGE2_IT):
         sub_dict = gen_sub(sub=True)
         for formula in BASE_FORMULA:
             write_to_file(formula, sub_dict, ran_order=True)
             call_program(sys.argv[1])
+    print("\n\n")
 
     # Stage 3 - Add extra whitespace
     print("-- STAGE 3: Extra Whitespace --")
-    STAGE3_IT = 1
-    NB_INSERTIONS = 5
+    STAGE3_IT = 3
+    NB_INSERTIONS = 10
     WHITESPACE = [' ', '\t', '\n']
     for _ in range(STAGE3_IT):
         sub_dict = gen_sub(sub=True)
@@ -115,11 +117,12 @@ def main():
 
             write_to_file(formula, sub_dict, ran_order=True)
             call_program(sys.argv[1])
+    print("\n\n")
 
     # Stage 4 - Remove random parts of the formula 
     # All of these should fail
     print("-- STAGE 4: Randomly remove parts of formula --")
-    STAGE4_IT = 10
+    STAGE4_IT = 5
     NB_DELETIONS = 1
     for _ in range(STAGE4_IT):
         sub_dict = gen_sub(sub=False)
@@ -133,10 +136,11 @@ def main():
 
             write_to_file(formula, sub_dict, ran_order=True)
             call_program(sys.argv[1], ex_pass=False)
+    print("\n\n")
 
     # Stage 5 - Add random valid symbols
     print("-- STAGE 5: Add random valid symbols --")
-    STAGE5_IT = 10
+    STAGE5_IT = 5
     NB_INSERTIONS = 1
     # TODO: predicates <07-03-20> #
     INSERTION = BASE_VAR + BASE_CONST + BASE_EQ + BASE_CONN + BASE_QUAN + list('()')
@@ -153,6 +157,7 @@ def main():
 
             write_to_file(formula, sub_dict, ran_order=True)
             call_program(sys.argv[1], ex_pass=False)
+    print("\n\n")
 
     # Stage 6 - Break Grammar Rules
     # invalid field names
@@ -202,9 +207,26 @@ def main():
         sub_dict['EQ'] = f"\\{sub_dict['EQ']}"
         write_to_file(formula, sub_dict, ran_order=False)
         call_program(sys.argv[1], ex_pass=False)
+    print("\n\n")
 
     # Stage 7 - Targetted Formula Cases
+    targetted_formulas = [
+        ("VAR1 EQ VAR2".split(), False, "Must be surrounded by brackets"),
+        ("NEG ( PRED1 ( VAR1 ) )".split(), False, "Unnessecary Brackets"),
+        ("( PRED1 ( VAR1 ) )".split(), False, "Unnessecary Brackets"),
+        ("PRED1 ( VAR1 ) AND PRED1 ( VAR2 )".split(), False, "Must be surrounded by brackets"),
+        ("( PRED1 ( VAR1 ) AND PRED1 ( VAR2 ) AND PRED1 ( VAR3 ) )".split(), False, "Missing brackets"),
+        ("FORALL VAR3 ( PRED2 ( VAR1 , VAR3 ) )".split(), False, "Unnessecary Brackets"),
+        ("PRED2 ( CONST1 , CONST2 )".split(), False, "Constants cannot be arguments"),
+        ("( VAR1 EQ VAR2 EQ VAR3 )".split(), False, "Missing brackets"),
+        ("( ( ( ( ( ( ( ( ( ( CONST1 EQ CONST2 ) ) ) ) ) ) ) ) ) )".split(), False, "Unnessecary brackets")
+    ]
 
+    for formula in targetted_formulas:
+        sub_dict = gen_sub(sub=False)
+        write_to_file(formula[0], sub_dict, ran_order=True)
+        call_program(sys.argv[1], ex_pass=formula[1])
+        print(f"This test has the following message attached to it:\n{formula[2]}\n")
 
 if __name__ == '__main__':
     main()
