@@ -5,6 +5,7 @@ import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 import sys 
 import re
+import string
 
 # TODO: stretch, fuzzy finder to recommend suggestions  <01-03-20, alex> #
 '''
@@ -426,7 +427,7 @@ def parse_file(path, parser):
                 # Add to first [] to add additional 'inner word' characters
                 # Second is special single characters
                 # Third is groups of special characters
-                split = [x for x in re.findall(r"[\w\\]+|[,()]|[=]*", v) if not x == ''] 
+                split = [x for x in re.findall(r"[\w\\=]+|[,()]", v) if not x == ''] 
                 split_values = split_values + split # rebuild values
             values = split_values
 
@@ -447,7 +448,11 @@ def parse_file(path, parser):
             for v in values:
                 check = [fs in v[0] for fs in FORBIDDEN_SUBSTRINGS]
                 if True in check:
-                    print("ERROR: Forbidden substring was found in a value")
+                    print("ERROR: Forbidden character was found in a value")
+                    return "FAIL"
+                check = [c in string.ascii_letters + string.digits + '_' for c in v[0]]
+                if False in check:
+                    print("ERROR: Forbidden character was found in value")
                     return "FAIL"
             if not len(values) == len(set(values)):
                 print("ERROR: Duplicate values in same class.")
@@ -459,7 +464,16 @@ def parse_file(path, parser):
             for v in values:
                 check = [fs in v for fs in FORBIDDEN_SUBSTRINGS]
                 if True in check:
-                    print("ERROR: Forbidden substring was found in a value")
+                    print("ERROR: Forbidden character was found in a value")
+                    return "FAIL"
+                if current_field in ["connectives", "quantifiers"]:
+                    check = [c in string.ascii_letters + string.digits + '\\_' for c in v[0]]
+                elif current_field == "equality":
+                    check = [c in string.ascii_letters + string.digits + '=_' for c in v[0]]
+                else:
+                    check = [c in string.ascii_letters + string.digits + '_' for c in v[0]]
+                if False in check:
+                    print("ERROR: Forbidden character was found in value")
                     return "FAIL"
             if not len(values) == len(set(values)):
                 print("ERROR: Duplicate values in same class.")
