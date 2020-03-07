@@ -415,6 +415,9 @@ def parse_file(path, parser):
         z = re.match(r"(.*):", l)
         if z:
             current_field = z.groups()[0]
+            if current_field in seen_fields:
+                print("ERROR: Duplicate field encountered!")
+                return "FAIL"
             values = l.split()[1:]
             seen_fields.append(current_field)
         else:
@@ -575,6 +578,7 @@ if __name__ == '__main__':
         print(f"\t{ERROR_DICT[parser.syntax_code]}")
     else:
         # If a valid formula, print out the graph
+        print(f"INPUT:\t{' '.join(parser.symbols['formula'])}")
         print("INFO:\tValid input string. See tree.png for parse tree")
         f.write(f"INFO:\tValid Input String! See tree.png for parse tree\n")
         parser.print_graph()

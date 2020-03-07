@@ -1,10 +1,7 @@
-variables: 7lubcrNx5n CCwcxZMgfu HeHNzaYxk0 5AU9_m8IrF 4XEilydlxA
-constants: TicuqgNLpI O1u59KXQ5B haZ9CHYVLu fRREX2D3Gy VO0cmDVDGH
-predicates: Phq5R7ABWP[1] eVkFxMYjGV[2] E6apjXNC6b[3]
-equality: HfKh2nbape
-connectives: C\3FeunfoC lEMoPTh_8e qJN0IQB3Pp vF2usYL2EI Jsopl2IN8H
-quantifiers: V18Z7rAekk QvFJ\V6ofU
-formula: ( ( 
- 7lubcrNx5n HfKh2nbape CCwcxZMgfu ) C\3FeunfoC 	 Jsopl2IN8H QvFJ\V6ofU HeHNzaYxk0 eVkFxMYjGV (   7lubcrNx5n , CCwcxZMgfu ) 
- 
- ) 
+variables: VAR1 VAR2 VAR3 VAR4 VAR5
+constants: CONST1 CONST2 CONST3 CONST4 CONST5
+predicates: PRED1[1] PRED2[2] PRED3[3] PRED4[4]
+equality: \EQ
+connectives: AND OR IMPLIES IFF NEG
+quantifiers: EXISTS FORALL
+formula: ( ( ( CONST1 \EQ CONST2 ) AND ( CONST1 \EQ VAR1 ) ) IFF ( ( VAR1 \EQ CONST1 ) AND ( VAR1 \EQ VAR2 ) ) ) 
