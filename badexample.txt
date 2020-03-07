@@ -1,7 +1,7 @@
-formula: A price E cost1 ( Same(cost1, ) AND ( NOT Non_zero(price) IFF (cost1 == 30) ) )
-equality: ==
-connectives: AND OR IMPLIES IFF NOT
-quantifiers: E A
-variables: price cost1
-constants: 30 Z
-predicates: Same[2] Non_zero[1] notEqual[3]
+variables: w x y z
+constants: C D
+predicates: P[2] Q[1]
+equality: EQ
+connectives: a_n_d l_o_r i_mpli_es iff n_eg
+quantifiers: \exists \forall
+formula: (( C EQ D ) a_n_d ((x EQ y) l_o_r P w,w)))

@@ -25,6 +25,7 @@ Production Rules:
 
     form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form
 '''
+
 # Predictive Parser Class
 class PredictiveParser:
     def __init__(self):
