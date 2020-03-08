@@ -18,7 +18,7 @@ The program requires the following prerequisites:
 
 \begin{itemize}
     \item Python 3.7.4 must be installed.
-    \item graphviz must be installed. Package managers should have this but here is a gitlab link: https://gitlab.com/graphviz/graphviz/
+    \item graphviz must be installed. A windows MSI can be found here https://graphviz.gitlab.io/download/
     \item Lab computers should have all packages except for pygraphviz which should be installed.
 \end{itemize}
 
@@ -70,15 +70,16 @@ tree.png will display the input formula at the top and below it will be the pars
 The following describes the error codes that may be encountered when parsing a valid file:
 \begin{itemize}
     \item GENERIC - The Code produced when no other code was set.
-    \item UNKNOWN\_SYMBOL -
-    \item UNEX\_SYMBOL -
-    \item EX\_VAR - 
-    \item EX\_VC -
-    \item EX\_EQ -
-    \item EX\_CONN2 -
-    \item EX\_BRACKET -
-    \item EX\_COMMA -
-    \item EX\_END - 
+    \item EMPTY - The input string was empty. By the rules of the grammar this is an invalid string.
+    \item UNKNOWN\_SYMBOL - If the symbol encountered was not defined in one of the fields in the input file (other than formula)
+    \item UNEX\_SYMBOL - The symbol encountered was not expected to appear at this position. In these cases we cannot determine what should have been here easily.
+    \item EX\_VAR - The parser expected a variable to be in this position, but the lookahead symbol is not one of the symbols recognised as a variable. Typically this will be associated with quantifier and predicate expressions.
+    \item EX\_VC - The parser expected either a variable or a constant at this position, but the lookahead symbol is not a variable or a constant. This will be encountered when evaluating the second argument of an equality.
+    \item EX\_EQ - The parser expected an equality symbol at this position, but the lookahead symbol is not one of the symbols recognised as an equality. This error will be thrown if an opening bracket followed by either a variable or a constant, but not preceded by a predicate, is found, but no equality symbol is found after.
+    \item EX\_CONN2 - The parser expected a connective with arity 2 at this position, but the lookahead symbol is not one of the symbols recognised as a connective with arity 2. This error will be raised if one formula within brackets is evaluated successfully, but there is no connective to join it with the second expected formula.
+    \item EX\_BRACKET - The parser expected either an opening or closing bracket at this position, but the lookahead symbol is not either of these. There are many places where this error could be thrown.
+    \item EX\_COMMA - The parser expected a comma at this position, but the lookahead symbol is not a comma. This will occur if the parser expected additional arguments in a predicate, or if the arguments have not been separated by commas.
+    \item EX\_END - The parser expected the end of the string but there are still more symbols in the string to process. This occurs if the parser evaluates all rules so far successfully and terminates, but the parser index is not equal to the length of the input string.
 \end{itemize}
 
 \end{document}
