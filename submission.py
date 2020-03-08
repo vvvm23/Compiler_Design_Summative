@@ -73,7 +73,6 @@ class PredictiveParser:
             if self.index < len(self.string): # Get next lookahead if available
                 self.lookahead = self.string[self.index]
             else:
-                # TODO: is this correct? <03-03-20, alex> #
                 self.lookahead = "" 
                 self.string.append("")
             return 0
@@ -157,7 +156,7 @@ class PredictiveParser:
                 pass
             else:
                 # Syntax Error
-                self.throw_syntax_error("UNEX_SYMBOL")
+                self.throw_syntax_error("EX_VC")
                 code = 1
 
             code = code if code else self.match(')')
@@ -182,7 +181,6 @@ class PredictiveParser:
             self.throw_syntax_error("UNKNOWN_SYMBOL")
             return 1
         variables = self.symbols['variables']
-        # TODO: this and similar could probably be made without for loop <02-03-20, alex> #
         for v in variables:
             if self.lookahead == v:
                 # If the lookahead matches a variable create variable node
@@ -542,24 +540,15 @@ if __name__ == '__main__':
     ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
     ERROR_DICT['EX_VAR'] = ("EX_VAR - Expected Variable at this Position\n"
                             f"SUGG:\tDid you mean {' or '.join(parser.symbols['variables'])}?")
-    ERROR_DICT['EX_CONST'] = ("EX_CONST - Expected Constant at this Position\n"
-                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['constants'])}?")
+    ERROR_DICT['EX_VC'] = ("EX_VC - Expected Variable or Constant at this Position\n"
+                           f"SUGG:\tDid you mean {' or '.join(parser.symbols['constants'] + parser.symbols['variables'])}")
     ERROR_DICT['EX_EQ'] = ("EQ_EQ - Expected Equality Symbol at this Position\n"
                            f"SUGG:\tDid you mean {' or '.join(parser.symbols['equality'])}?")
     ERROR_DICT['EX_CONN2'] = ("EX_CONN2 - Expected Connective with 2-arity at this Position.\n"
                               f"SUGG:\tDid you mean {' or '.join(parser.symbols['connectives2'])}?")
-    ERROR_DICT['EX_CONN1'] = ("EX_CONN1 - Expected Connective with 1-arity at this Position\n"
-                              f"SUGG:\tDid you mean {' or '.join(parser.symbols['connectives1'])}?")
-    ERROR_DICT['EX_QUAN'] = ("EX_QUAN - Expected a Quantifier at this Position.\n"
-                             f"SUGG:\tDid you mean {' or '.join(parser.symbols['quantifiers'])}?")
-    ERROR_DICT['EX_PRED'] = ("EX_PRED - Expected a Predicate at this Position.\n"
-                             f"SUGG:\tDid you mean {' or '.join(x[0] for x in parser.symbols['predicates'])}?")
     ERROR_DICT['EX_BRACKET'] = "EX_BRACKET - Expected a bracket at this Position."
     ERROR_DICT['EX_COMMA'] = "EX_COMMA - Expected a comma at this Position."
     ERROR_DICT['EX_END'] = "EX_END - Expected end of string, but encountered more tokens."
-    ERROR_DICT['UNEX_BRACKET'] = "UNEX_BRACKET - Unexpected Bracket at this Position."
-    ERROR_DICT['UNEX_COMMA'] = "UNEX_COMMA - Unexpected Comma at this Position."
-    ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position."
     
     # Print the grammar productions
     print("~~ PRODUCTIONS ~~")
