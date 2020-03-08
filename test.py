@@ -1,3 +1,21 @@
+"""
+    ~~~ IMPORTANT PLEASE READ ~~~
+    File: Compiler Design Test Program
+    Description: Program to test Compiler Design Summative enmass.
+    Usage: python test.py your_program.py
+            (assuming your_program has it's first argument as the input text file)
+            (ie. you call your program by doing python your_program.py test.txt)
+            (If you cannot do this, edit line 99 to fit your arguments.)
+
+    The program will then try many tests in quick succession. You will have to manually make sure the result
+    matches the correct result as I have no way of knowing how your implementation works.
+
+    Be aware that occasionally there may be false positives/negatives and bugs and may not test every case!
+    (ie. not my fault if you fail)
+
+    Before complaining to me, read the specification and FAQs carefully.
+"""
+
 import sys
 import subprocess
 import random
@@ -40,7 +58,7 @@ def gen_sub(sub=True):
         sub_dict[symbol] = ran_id
 
     for symbol in BASE_EQ:
-        ran_id = ''.join(random.choices(ALLOWED_CHARS+'=', k=10))
+        ran_id = ''.join(random.choices(ALLOWED_CHARS+'=\\', k=10))
         sub_dict[symbol] = ran_id
 
     for symbol in BASE_VAR + BASE_CONST:
@@ -203,10 +221,10 @@ def main():
         write_to_file(formula, sub_dict, ran_order=False)
         call_program(sys.argv[1], ex_pass=False)
 
-        sub_dict = gen_sub(sub=False)
-        sub_dict['EQ'] = f"\\{sub_dict['EQ']}"
-        write_to_file(formula, sub_dict, ran_order=False)
-        call_program(sys.argv[1], ex_pass=False)
+        # sub_dict = gen_sub(sub=False)
+        # sub_dict['EQ'] = f"\\{sub_dict['EQ']}"
+        # write_to_file(formula, sub_dict, ran_order=False)
+        # call_program(sys.argv[1], ex_pass=False)
     print("\n\n")
 
     # Stage 7 - Targetted Formula Cases

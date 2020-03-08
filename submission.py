@@ -472,7 +472,7 @@ def parse_file(path, parser):
                 if current_field in ["connectives", "quantifiers"]:
                     check = [c in string.ascii_letters + string.digits + '\\_' for c in v[0]]
                 elif current_field == "equality":
-                    check = [c in string.ascii_letters + string.digits + '=_' for c in v[0]]
+                    check = [c in string.ascii_letters + string.digits + '\\=_' for c in v[0]]
                 else:
                     check = [c in string.ascii_letters + string.digits + '_' for c in v[0]]
                 if False in check:
