@@ -57,6 +57,9 @@ class PredictiveParser:
 
     # start function to begin parsing token stream from
     def parse(self, string):
+        if len(string) == 0:
+            self.throw_syntax_error("EMPTY")
+            return 1
         self.string = string 
         self.index = 0 
         self.lookahead = string[0] # Set the initial lookahead
@@ -537,7 +540,9 @@ if __name__ == '__main__':
 
     # Define mappings between error codes and error messages
     ERROR_DICT = defaultdict(lambda: "GENERIC - Generic Syntax Error.")
+    ERROR_DICT['EMPTY'] = "EMPTY - Input string was empty."
     ERROR_DICT['UNKNOWN_SYMBOL'] = "UNKNOWN_SYMBOL - Unknown reference to symbol."
+    ERROR_DICT['UNEX_SYMBOL'] = "UNEX_SYMBOL - This symbol was unexpected at this Position!"
     ERROR_DICT['EX_VAR'] = ("EX_VAR - Expected Variable at this Position\n"
                             f"SUGG:\tDid you mean {' or '.join(parser.symbols['variables'])}?")
     ERROR_DICT['EX_VC'] = ("EX_VC - Expected Variable or Constant at this Position\n"
@@ -560,10 +565,12 @@ if __name__ == '__main__':
     if parser.parse(parser.symbols['formula']):
         # If a syntax error, provide informtion
         f.write(f"ERROR:\tSyntax Error! Position {parser.index}\n")
-        f.write('\t' + ''.join(f">>> {x} <<< " if i == parser.index else f"{x} " for i, x in enumerate(parser.string)) + '\n')
+        if not parser.syntax_code == "EMPTY":
+            f.write('\t' + ''.join(f">>> {x} <<< " if i == parser.index else f"{x} " for i, x in enumerate(parser.string)) + '\n')
         f.write(f"\t{ERROR_DICT[parser.syntax_code]}\n")
         print(f"ERROR:\tSyntax Error! Position {parser.index}")
-        print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
+        if not parser.syntax_code == "EMPTY":
+            print('\t' + ''.join(f"\33[41m{x} \033[0m" if i == parser.index else f"{x} " for i, x in enumerate(parser.string)))
         print(f"\t{ERROR_DICT[parser.syntax_code]}")
     else:
         # If a valid formula, print out the graph
