@@ -507,17 +507,24 @@ def parse_file(path, parser):
 
 # Function to print the production rules based on the seen symbols
 def print_productions(parser):
-    print("var -> " + ' | '.join(parser.symbols['variables']))
-    print("const -> " + ' | '.join(parser.symbols['constants']))
-    print("eq -> " + ' | '.join(parser.symbols['equality']))
-    print("conn1 -> " + ' | '.join(parser.symbols['connectives1']))
-    print("conn2 -> " + ' | '.join(parser.symbols['connectives2']))
-    print("quan -> " + ' | '.join(parser.symbols['quantifiers']))
-    print("pred -> " + ' | '.join(
+    print_productions = []
+
+    print_productions.append("var -> " + ' | '.join(parser.symbols['variables']))
+    print_productions.append("const -> " + ' | '.join(parser.symbols['constants']))
+    print_productions.append("eq -> " + ' | '.join(parser.symbols['equality']))
+    print_productions.append("conn1 -> " + ' | '.join(parser.symbols['connectives1']))
+    print_productions.append("conn2 -> " + ' | '.join(parser.symbols['connectives2']))
+    print_productions.append("quan -> " + ' | '.join(parser.symbols['quantifiers']))
+    print_productions.append("pred -> " + ' | '.join(
         x[0] + ' ( ' + 'var , ' * (x[1]-1) + 'var )'
         for x in parser.symbols['predicates']
     ))
-    print("form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form2")
+    print_productions.append("form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form2")
+
+    print('\n'.join(print_productions))
+    f = open('productions.txt', mode='w')
+    f.write('\n'.join(print_productions))
+    f.close()
 
 # Entry point to program
 if __name__ == '__main__':

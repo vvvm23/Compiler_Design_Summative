@@ -1,0 +1,8 @@
+var -> w | x | y | z
+const -> C | D
+eq -> =
+conn1 -> \neg
+conn2 -> \land | \lor | \implies | \iff
+quan -> \exists | \forall
+pred -> P ( var , var ) | Q ( var )
+form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form2
