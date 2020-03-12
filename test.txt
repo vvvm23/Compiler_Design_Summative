@@ -1,7 +1,7 @@
+quantifiers: EXISTS FORALL
+constants: CONST1 CONST2 CONST3 CONST4 CONST5
 variables: VAR1 VAR2 VAR3 VAR4 VAR5
 equality: EQ
 connectives: AND OR IMPLIES IFF NEG
-quantifiers: EXISTS FORALL
-predicates: PRED1[1] PRED2[2] PRED3[3] PRED4[4]
-constants: CONST1 CONST2 CONST3 CONST4 CONST5
 formula: ( ( ( ( ( ( ( ( ( ( CONST1 EQ CONST2 ) ) ) ) ) ) ) ) ) ) 
+predicates: PRED1[1] PRED2[2] PRED3[3] PRED4[4]

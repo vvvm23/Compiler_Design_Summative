@@ -1,8 +1,8 @@
-var -> w | x | y | z
-const -> C | D
-eq -> =
-conn1 -> \neg
-conn2 -> \land | \lor | \implies | \iff
-quan -> \exists | \forall
-pred -> P ( var , var ) | Q ( var )
+var -> VAR1 | VAR2 | VAR3 | VAR4 | VAR5
+const -> CONST1 | CONST2 | CONST3 | CONST4 | CONST5
+eq -> EQ
+conn1 -> NEG
+conn2 -> AND | OR | IMPLIES | IFF
+quan -> EXISTS | FORALL
+pred -> PRED1 ( var ) | PRED2 ( var , var ) | PRED3 ( var , var , var ) | PRED4 ( var , var , var , var )
 form -> pred | ( var eq var ) | ( var eq const ) | ( const eq var ) | ( const eq const ) | ( form conn2 form ) | quan var form | conn1 form2
